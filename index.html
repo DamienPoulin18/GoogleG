@@ -64,6 +64,16 @@
             document.getElementById('quasar-container').style.display = 'block';
             document.title = "Google Docs";
         }
+    // Désactive le clic droit
+document.addEventListener('contextmenu', event => event.preventDefault());
+
+// Désactive les raccourcis d'inspection
+document.onkeydown = function(e) {
+    if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74))) {
+        return false;
+    }
+};
+
     </script>
 </body>
 </html>
