@@ -3,105 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <title>Blox Fruits - Home</title>
-    <!-- Favicon Google Docs par défaut pour la discrétion -->
-    <link id="favicon" rel="icon" type="image/x-icon" href="https://ssl.gstatic.com">
+    <link id="fav" rel="icon" type="image/x-icon" href="https://www.google.com">
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background-color: black; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        #v-page { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: url('RedKing.png') center/cover; z-index: 10; transition: opacity 0.3s; }
-        #p-container { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 20; background: white; }
-        iframe { width: 100%; height: 100%; border: none; outline: none; }
-        /* Anti-curieux : bloque la sélection de texte */
-        * { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; font-family: sans-serif; }
+        #bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: url('RedKing.png') center/cover; z-index: 5; }
+        /* La zone de vue est mise en z-index 10 pour être au-dessus */
+        #view { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; background: #fff; }
+        iframe { width: 100%; height: 100%; border: none; }
+        
+        /* Overlay invisible pour capter la souris même sur l'iframe */
+        #sensor { position: fixed; top: 0; left: 0; width: 100%; height: 10px; z-index: 100; pointer-events: all; }
     </style>
 </head>
-<body>
+<body oncontextmenu="return false;">
 
-    <div id="v-page"></div>
-    <div id="p-container"><iframe id="f-frame" src="about:blank"></iframe></div>
+    <!-- Zone invisible tout en haut qui capte si la souris sort par le haut -->
+    <div id="sensor"></div>
+
+    <div id="bg"></div>
+    <div id="view"><iframe id="ifr" src="about:blank"></iframe></div>
 
     <script>
-        // CRYPTAGE ROT13 + BASE64 (Fortinet ne peut pas lire ça)
-        const s = {
-            k: "a2FzcG4=", // kaspn
-            u: "aHR0cHM6Ly9xdWFzYXIudWIucGh1cmkuY2M=", // Quasar
-            c: "aHR0cHM6Ly9jbGFzc3Jvb20uZ29vZ2xlLmNvbS91LzAvaA==", // Classroom
-            t: "R29vZ2xlIERvY3MgLSBEZXZvaXJz" // Google Docs - Devoirs
-        };
+        const _0x = (s) => s.split('').map(c => String.fromCharCode(c.charCodeAt(0) - 1)).join('');
+        const P_URL = _0x("iuuqt;00rvbtbs/vc/qivsj/dd"); 
+        const C_URL = _0x("iuuqt;00dmbttsppn/hpphmf/dpn0v010i");
+        const S_KEY = _0x("lbtqo");
 
-        let seq = "";
+        let input = "";
+        let isActive = false;
 
-        // SÉCURITÉ : Bloquer clic droit, F12, Ctrl+U, Ctrl+S
-        document.addEventListener('contextmenu', e => e.preventDefault());
-        document.onkeydown = function(e) {
-            if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) || (e.ctrlKey && (e.keyCode == 85 || e.keyCode == 83))) {
-                return false;
-            }
-        };
-
-        document.addEventListener('keydown', (e) => {
-            const key = e.key.toLowerCase();
-
-            // 1. PANIC KEY "Q" -> REMPLACE TOTALEMENT LA PAGE DANS L'HISTORIQUE
-            if (key === 'q') {
-                window.location.replace(atob(s.c));
-                return;
-            }
-
-            // 2. ESCAPE -> FERMETURE ET NETTOYAGE
-            if (e.key === 'Escape') {
-                location.reload();
-                return;
-            }
-
-            // 3. LOGIQUE D'ENTRÉE
-            seq += key;
-            if (seq.endsWith(atob(s.k))) {
-                // Change l'URL pour un faux chemin de recherche
-                window.history.pushState({}, "", "/viewer/auth/google-session-7721");
-                boot();
-            }
-            if (seq.length > 20) seq = "";
+        // --- CORRECTION AUTO-HIDE ---
+        // Détecte quand la souris quitte la fenêtre vers le haut (barre d'onglets)
+        document.addEventListener('mouseleave', () => {
+            if (isActive) masquerRapidement();
         });
 
-        // REVENIR EN ARRIÈRE (Bouton Précédent)
-        window.onpopstate = () => {
-            document.getElementById('p-container').style.display = 'none';
-            document.getElementById('v-page').style.opacity = '1';
-            document.getElementById('f-frame').src = 'about:blank';
-            document.title = "Blox Fruits - Home";
-        };
+        // Détecte si on change d'onglet ou si on réduit la fenêtre
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && isActive) masquerRapidement();
+        });
 
-        function boot() {
-            const container = document.getElementById('p-container');
-            const frame = document.getElementById('f-frame');
-            
-            // On ne charge l'URL que si nécessaire
-            if (frame.src === "about:blank") {
-                frame.src = atob(s.u);
+        // Détecte si la fenêtre perd le focus (Alt+Tab ou clic ailleurs)
+        window.addEventListener('blur', () => {
+            if (isActive) masquerRapidement();
+        });
+
+        function masquerRapidement() {
+            document.getElementById('view').style.display = 'none';
+            document.getElementById('bg').style.display = 'block';
+            document.title = "Blox Fruits - Home";
+            // On ne coupe pas le lien pour pouvoir revenir vite avec le code
+            isActive = false; 
+        }
+
+        document.addEventListener('keydown', (e) => {
+            const k = e.key.toLowerCase();
+
+            if (k === 'q') {
+                window.location.replace(C_URL);
+                return;
             }
 
-            document.getElementById('v-page').style.opacity = '0';
-            setTimeout(() => {
-                container.style.display = 'block';
-                document.title = atob(s.t);
-                // Change le favicon pour Google Docs
-                document.getElementById('favicon').href = "https://ssl.gstatic.com";
-            }, 300);
+            input += k;
+            if (input.endsWith(S_KEY)) {
+                window.history.pushState({state:1}, "", "/drive/u/0/my-drive");
+                launch();
+                input = "";
+            }
+            if (input.length > 10) input = "";
+        });
+
+        function launch() {
+            const v = document.getElementById('view');
+            const f = document.getElementById('ifr');
+            if (f.src === "about:blank") f.src = P_URL;
+            
+            document.getElementById('bg').style.display = 'none';
+            v.style.display = 'block';
+            document.title = "Google Docs";
+            isActive = true;
         }
-    // Si la souris quitte la fenêtre du navigateur, on cache tout !
-document.addEventListener('mouseleave', () => {
-    if (isActive) {
-        document.getElementById('view').style.display = 'none';
-        document.getElementById('bg').style.display = 'block';
-        document.title = "Blox Fruits - Home";
-    }
-});
-
-// Si on revient dans la fenêtre, on peut choisir de réafficher (ou pas)
-document.addEventListener('mouseenter', () => {
-    // Optionnel : ne rien faire pour rester discret
-});
-
     </script>
 </body>
 </html>
