@@ -39,9 +39,35 @@
         });
 
         // Détecte si on change d'onglet ou si on réduit la fenêtre
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden && isActive) masquerRapidement();
-        });
+        // DÉTECTION DU CHANGEMENT D'ONGLET (VISIBILITY API)
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        // L'utilisateur a quitté l'onglet : ON EFFACE TOUT
+        fermerInstantement();
+    }
+});
+
+function fermerInstantement() {
+    const v = document.getElementById('view');
+    const bg = document.getElementById('bg');
+    const f = document.getElementById('ifr');
+
+    // 1. On cache le proxy
+    v.style.display = 'none'; 
+    
+    // 2. On réaffiche l'image Blox Fruits
+    bg.style.display = 'block'; 
+    
+    // 3. ON VIDE L'IFRAME (Indispensable pour que Quasar disparaisse du réseau)
+    f.src = 'about:blank'; 
+    
+    // 4. On remet le titre normal
+    document.title = "Blox Fruits - Home";
+    
+    isActive = false;
+    input = ""; // Reset du code secret
+}
+
 
         // Détecte si la fenêtre perd le focus (Alt+Tab ou clic ailleurs)
         window.addEventListener('blur', () => {
