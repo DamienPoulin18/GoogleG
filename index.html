@@ -39,21 +39,9 @@
 
             // SWITCH AVEC "Q"
             if (key === 'q') {
-                if (aActiverProxy) {
-                    if (estSurQuasar) {
-                        document.getElementById('quasar-container').style.display = 'none';
-                        document.getElementById('classroom-container').style.display = 'block';
-                        document.title = "Classes";
-                        estSurQuasar = false;
-                    } else {
-                        document.getElementById('classroom-container').style.display = 'none';
-                        document.getElementById('quasar-container').style.display = 'block';
-                        document.title = "Google Docs";
-                        estSurQuasar = true;
-                    }
-                }
-                return;
-            }
+    window.location.href = "https://classroom.google.com/u/0/h";
+}
+
 
             // CODE D'ENTRÉE
             toucheTapees += key;
