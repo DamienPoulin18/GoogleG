@@ -3,28 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blox Fruits - Red King</title>
-       <style>
+    <title>Blox Fruits Full Screen</title>
+    <style>
+        /* Supprime toutes les bordures blanches */
         body, html {
             margin: 0;
             padding: 0;
             height: 100%;
             width: 100%;
             overflow: hidden;
-            background-color: black; /* Les bandes seront noires */
+            background-color: black;
         }
 
-        .background {
+        .background-container {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
+            
+            /* Ton image RedKing.png */
             background-image: url('RedKing.png'); 
             
-            /* 'contain' garde les proportions sans écraser l'image */
-            background-size: contain; 
+            /* 'cover' force l'image à couvrir TOUT l'écran (côtés inclus) */
+            background-size: cover; 
             
+            /* Centre l'image pour que le milieu soit toujours visible */
             background-position: center;
             background-repeat: no-repeat;
         }
@@ -48,31 +52,31 @@
             top: 20px;
             right: 20px;
             padding: 10px 20px;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.5);
             color: white;
-            border: 1px solid white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
             border-radius: 5px;
+            font-family: sans-serif;
             cursor: pointer;
             z-index: 20;
         }
     </style>
-
 </head>
 <body>
 
-    <div class="background">
+    <div class="background-container">
         <button id="cancel-btn" onclick="annuler()">Annuler</button>
         <button id="secret-btn" onclick="ouvrirQuasar()"></button>
     </div>
 
     <script>
         function ouvrirQuasar() {
-            // Ouvre le site Quasar directement
+            // Ouvre le site cible
             window.location.href = "https://quasar.ub.phuri.cc";
         }
 
         function annuler() {
-            // Efface l'image et affiche un écran noir
+            // Retour à un écran noir
             document.body.innerHTML = "<div style='background:black; height:100vh;'></div>";
         }
     </script>
