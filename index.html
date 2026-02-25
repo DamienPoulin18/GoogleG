@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mon Site Blox Fruits</title>
+    <title>Blox Fruits - Red King</title>
     <style>
         body, html {
             margin: 0;
@@ -14,7 +14,7 @@
             background-color: black;
         }
 
-        /* Utilisation de votre fichier local favicon.png */
+        /* L'image remplit l'écran sans zoomer (étirée parfaitement) */
         .background {
             position: fixed;
             top: 0;
@@ -22,12 +22,12 @@
             width: 100vw;
             height: 100vh;
             background-image: url('RedKing.png'); 
-            background-size: cover;
+            background-size: 100% 100%; 
             background-position: center;
             background-repeat: no-repeat;
         }
 
-        /* Bouton invisible en bas à gauche */
+        /* Zone invisible en bas à gauche (cliquer ici ouvre Quasar) */
         #secret-btn {
             position: absolute;
             bottom: 0;
@@ -36,43 +36,46 @@
             height: 150px;
             background: transparent;
             border: none;
-            cursor: default; /* Reste discret */
+            cursor: default;
             z-index: 10;
         }
 
-        /* Bouton Annuler en haut à droite */
+        /* Bouton Annuler discret en haut à droite */
         #cancel-btn {
             position: absolute;
-            top: 20px;
-            right: 20px;
-            padding: 10px 20px;
-            background: rgba(0, 0, 0, 0.6);
-            color: white;
-            border: 1px solid white;
-            border-radius: 5px;
+            top: 15px;
+            right: 15px;
+            padding: 8px 16px;
+            background: rgba(0, 0, 0, 0.5);
+            color: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
             cursor: pointer;
-            font-family: sans-serif;
+            font-size: 14px;
             z-index: 20;
+        }
+
+        #cancel-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
         }
     </style>
 </head>
 <body>
 
     <div class="background">
-        <button id="cancel-btn" onclick="retour()">Annuler</button>
-        <!-- Ce bouton est totalement invisible -->
-        <button id="secret-btn" onclick="ouvrirSite()"></button>
+        <button id="cancel-btn" onclick="annuler()">Annuler</button>
+        <button id="secret-btn" onclick="ouvrirQuasar()"></button>
     </div>
 
     <script>
-        function ouvrirSite() {
+        function ouvrirQuasar() {
+            // Ouvre le site Quasar directement
             window.location.href = "https://quasar.ub.phuri.cc";
         }
 
-        function retour() {
-            if(confirm("Voulez-vous quitter ?")) {
-                document.body.innerHTML = "<div style='background:black; height:100vh; display:flex; justify-content:center; align-items:center;'><h1 style='color:white; font-family:sans-serif;'>Fermé</h1></div>";
-            }
+        function annuler() {
+            // Efface l'image et affiche un écran noir
+            document.body.innerHTML = "<div style='background:black; height:100vh;'></div>";
         }
     </script>
 
