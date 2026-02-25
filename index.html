@@ -43,21 +43,11 @@ document.addEventListener('mouseleave', () => {
 });
 
 // SÉCURITÉ SUPPLÉMENTAIRE : SI L'ONGLET PERD LE FOCUS
-document.addEventListener('visibilitychange', () => {
-    if (document.hidden && isActive) {
-        window.location.replace("https://classroom.google.com");
-    }
-});
+
 
 
         // Détecte si on change d'onglet ou si on réduit la fenêtre
         // DÉTECTION DU CHANGEMENT D'ONGLET (VISIBILITY API)
-document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-        // L'utilisateur a quitté l'onglet : ON EFFACE TOUT
-        fermerInstantement();
-    }
-});
 
 function fermerInstantement() {
     const v = document.getElementById('view');
