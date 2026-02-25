@@ -16,7 +16,8 @@
             z-index: 10; display: block;
         }
 
-        #quasar-container {
+        /* CONTENEUR UNIQUE POUR LES IFRAMES */
+        .iframe-container {
             display: none; position: fixed; top: 0; left: 0;
             width: 100vw; height: 100vh; z-index: 20;
         }
@@ -34,57 +35,80 @@
 
     <div id="main-page"></div>
 
-    <div id="quasar-container">
-        <button id="cancel-btn" onclick="fermerQuasar()">FERMER</button>
+    <!-- Fenêtre pour Quasar -->
+    <div id="quasar-container" class="iframe-container">
+        <button id="cancel-btn" onclick="fermerTout()">FERMER</button>
         <iframe src="about:blank" id="site-iframe"></iframe>
+    </div>
+
+    <!-- Fenêtre pour Classroom -->
+    <div id="classroom-container" class="iframe-container">
+        <iframe src="https://classroom.google.com" id="classroom-iframe"></iframe>
     </div>
 
     <script>
         const CODE_SECRET = "kaspn";
         let toucheTapees = "";
         const PROXY_URL = "https://quasar.ub.phuri.cc";
-        const EMERGENCY_URL = "https://classroom.google.com";
+        
+        let estSurQuasar = false;
 
         document.addEventListener('keydown', (e) => {
             const key = e.key.toLowerCase();
 
-            // 1. RACCOURCI URGENCE : TOUCHE "Q"
+            // 1. SWITCH RAPIDE AVEC "Q"
             if (key === 'q') {
-                window.location.href = EMERGENCY_URL;
+                if (estSurQuasar) {
+                    afficherClassroom();
+                } else if (document.getElementById('quasar-container').style.display === 'none' && toucheTapees.includes(CODE_SECRET)) {
+                    // Si on était déjà entré mais qu'on a switché sur Classroom
+                    ouvrirQuasar();
+                } else if (toucheTapees.endsWith(CODE_SECRET)) {
+                    ouvrirQuasar();
+                }
                 return;
             }
 
-            // 2. RACCOURCI FERMETURE RAPIDE : TOUCHE "ESCAPE"
+            // 2. FERMETURE TOTALE AVEC "ESCAPE"
             if (e.key === 'Escape') {
-                fermerQuasar();
+                fermerTout();
                 return;
             }
 
             // 3. DÉTECTION DU CODE "KASPN"
             toucheTapees += key;
-            toucheTapees = toucheTapees.slice(-CODE_SECRET.length);
+            if (toucheTapees.length > 10) toucheTapees = toucheTapees.slice(-10);
 
-            if (toucheTapees === CODE_SECRET) {
+            if (toucheTapees.endsWith(CODE_SECRET)) {
                 ouvrirQuasar();
-                toucheTapees = "";
             }
         });
 
         function ouvrirQuasar() {
             const iframe = document.getElementById('site-iframe');
-            if (iframe.src === "about:blank" || iframe.src !== PROXY_URL) {
-                iframe.src = PROXY_URL;
-            }
+            if (iframe.src === "about:blank") iframe.src = PROXY_URL;
+            
             document.getElementById('main-page').style.display = 'none';
+            document.getElementById('classroom-container').style.display = 'none';
             document.getElementById('quasar-container').style.display = 'block';
-            document.title = "Google Docs"; // Titre discret
+            document.title = "Google Docs"; 
+            estSurQuasar = true;
         }
 
-        function fermerQuasar() {
+        function afficherClassroom() {
             document.getElementById('quasar-container').style.display = 'none';
+            document.getElementById('classroom-container').style.display = 'block';
+            document.title = "Classes";
+            estSurQuasar = false;
+        }
+
+        function fermerTout() {
+            document.querySelectorAll('.iframe-container').forEach(el => el.style.display = 'none');
             document.getElementById('main-page').style.display = 'block';
-            document.title = "Blox Fruits - Home";
             document.getElementById('site-iframe').src = "about:blank";
+            document.title = "Blox Fruits - Home";
+            estSurQuasar = false;
+            toucheTapees = "";
         }
     </script>
 
