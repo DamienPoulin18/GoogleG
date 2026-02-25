@@ -89,16 +89,34 @@
 
     <script>
         function ouvrirQuasar() {
-            // On cache l'image et on montre le site Quasar
-            document.getElementById('main-page').style.display = 'none';
-            document.getElementById('quasar-container').style.display = 'block';
-        }
+    // URL encodée : "aHR0cHM6Ly9xdWFzYXIudWIucGh1cmkuY2M="
+    const encodedUrl = "aHR0cHM6Ly9xdWFzYXIudWIucGh1cmkuY2M="; 
+    const iframe = document.getElementById('site-iframe');
+    
+    if (!iframe.src || iframe.src === "about:blank") {
+        iframe.src = atob(encodedUrl);
+    }
+    
+    document.getElementById('main-page').style.display = 'none';
+    document.getElementById('quasar-container').style.display = 'block';
+}
+
 
         function fermerQuasar() {
             // On cache Quasar et on revient à l'image
             document.getElementById('quasar-container').style.display = 'none';
             document.getElementById('main-page').style.display = 'block';
         }
+    // Désactive le clic droit
+document.addEventListener('contextmenu', event => event.preventDefault());
+
+// Désactive les raccourcis d'inspection
+document.onkeydown = function(e) {
+    if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74))) {
+        return false;
+    }
+};
+
     </script>
 
 </body>
