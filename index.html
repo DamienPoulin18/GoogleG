@@ -82,18 +82,7 @@ function fermerInstantement() {
 
 
         // Détecte si la fenêtre perd le focus (Alt+Tab ou clic ailleurs)
-        window.addEventListener('blur', () => {
-            if (isActive) masquerRapidement();
-        });
-
-        function masquerRapidement() {
-            document.getElementById('view').style.display = 'none';
-            document.getElementById('bg').style.display = 'block';
-            document.title = "Blox Fruits - Home";
-            // On ne coupe pas le lien pour pouvoir revenir vite avec le code
-            isActive = false; 
-        }
-
+        
         document.addEventListener('keydown', (e) => {
             const k = e.key.toLowerCase();
 
