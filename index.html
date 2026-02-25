@@ -4,17 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blox Fruits - Red King</title>
-    <style>
+       <style>
         body, html {
             margin: 0;
             padding: 0;
             height: 100%;
             width: 100%;
             overflow: hidden;
-            background-color: black;
+            background-color: black; /* Les bandes seront noires */
         }
 
-        /* L'image remplit l'écran sans zoomer (étirée parfaitement) */
         .background {
             position: fixed;
             top: 0;
@@ -22,12 +21,15 @@
             width: 100vw;
             height: 100vh;
             background-image: url('RedKing.png'); 
-            background-size: 100% 100%; 
+            
+            /* 'contain' garde les proportions sans écraser l'image */
+            background-size: contain; 
+            
             background-position: center;
             background-repeat: no-repeat;
         }
 
-        /* Zone invisible en bas à gauche (cliquer ici ouvre Quasar) */
+        /* Bouton invisible (Bas Gauche) */
         #secret-btn {
             position: absolute;
             bottom: 0;
@@ -40,25 +42,21 @@
             z-index: 10;
         }
 
-        /* Bouton Annuler discret en haut à droite */
+        /* Bouton Annuler (Haut Droite) */
         #cancel-btn {
             position: absolute;
-            top: 15px;
-            right: 15px;
-            padding: 8px 16px;
-            background: rgba(0, 0, 0, 0.5);
-            color: rgba(255, 255, 255, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 4px;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: 1px solid white;
+            border-radius: 5px;
             cursor: pointer;
-            font-size: 14px;
             z-index: 20;
         }
-
-        #cancel-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
     </style>
+
 </head>
 <body>
 
