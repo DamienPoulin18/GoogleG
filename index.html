@@ -5,81 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blox Fruits - Home</title>
     <style>
-        body, html {
-            margin: 0; padding: 0; height: 100%; width: 100%;
-            overflow: hidden; background-color: black; font-family: sans-serif;
-        }
-
-        #main-page {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background-image: url('RedKing.png'); background-size: cover; background-position: center;
-            z-index: 10; display: block;
-        }
-
-        /* CONTENEUR UNIQUE POUR LES IFRAMES */
-        .iframe-container {
-            display: none; position: fixed; top: 0; left: 0;
-            width: 100vw; height: 100vh; z-index: 20;
-        }
-
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background-color: black; font-family: sans-serif; }
+        #main-page { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-image: url('RedKing.png'); background-size: cover; background-position: center; z-index: 10; }
+        .iframe-container { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 20; }
         iframe { width: 100%; height: 100%; border: none; }
-
-        #cancel-btn {
-            position: absolute; top: 20px; right: 20px; padding: 10px 25px;
-            background: rgba(255, 0, 0, 0.8); color: white; border: 2px solid white;
-            border-radius: 8px; font-weight: bold; cursor: pointer; z-index: 30;
-        }
+        #cancel-btn { position: absolute; top: 20px; right: 20px; padding: 10px 25px; background: rgba(255, 0, 0, 0.8); color: white; border: 2px solid white; border-radius: 8px; font-weight: bold; cursor: pointer; z-index: 30; }
     </style>
 </head>
 <body>
 
     <div id="main-page"></div>
 
-    <!-- Fenêtre pour Quasar -->
+    <!-- Quasar -->
     <div id="quasar-container" class="iframe-container">
         <button id="cancel-btn" onclick="fermerTout()">FERMER</button>
         <iframe src="about:blank" id="site-iframe"></iframe>
     </div>
 
-    <!-- Fenêtre pour Classroom -->
+    <!-- Classroom -->
     <div id="classroom-container" class="iframe-container">
-        <iframe src="https://classroom.google.com" id="classroom-iframe"></iframe>
+        <iframe src="https://classroom.google.com/u/0/h" id="classroom-iframe"></iframe>
     </div>
 
     <script>
         const CODE_SECRET = "kaspn";
         let toucheTapees = "";
         const PROXY_URL = "https://quasar.ub.phuri.cc";
-        
         let estSurQuasar = false;
+        let aActiverProxy = false;
 
         document.addEventListener('keydown', (e) => {
             const key = e.key.toLowerCase();
 
-            // 1. SWITCH RAPIDE AVEC "Q"
+            // SWITCH AVEC "Q"
             if (key === 'q') {
-                if (estSurQuasar) {
-                    afficherClassroom();
-                } else if (document.getElementById('quasar-container').style.display === 'none' && toucheTapees.includes(CODE_SECRET)) {
-                    // Si on était déjà entré mais qu'on a switché sur Classroom
-                    ouvrirQuasar();
-                } else if (toucheTapees.endsWith(CODE_SECRET)) {
-                    ouvrirQuasar();
+                if (aActiverProxy) {
+                    if (estSurQuasar) {
+                        document.getElementById('quasar-container').style.display = 'none';
+                        document.getElementById('classroom-container').style.display = 'block';
+                        document.title = "Classes";
+                        estSurQuasar = false;
+                    } else {
+                        document.getElementById('classroom-container').style.display = 'none';
+                        document.getElementById('quasar-container').style.display = 'block';
+                        document.title = "Google Docs";
+                        estSurQuasar = true;
+                    }
                 }
                 return;
             }
 
-            // 2. FERMETURE TOTALE AVEC "ESCAPE"
-            if (e.key === 'Escape') {
-                fermerTout();
-                return;
-            }
-
-            // 3. DÉTECTION DU CODE "KASPN"
+            // CODE D'ENTRÉE
             toucheTapees += key;
-            if (toucheTapees.length > 10) toucheTapees = toucheTapees.slice(-10);
-
             if (toucheTapees.endsWith(CODE_SECRET)) {
+                aActiverProxy = true;
                 ouvrirQuasar();
             }
         });
@@ -87,30 +66,14 @@
         function ouvrirQuasar() {
             const iframe = document.getElementById('site-iframe');
             if (iframe.src === "about:blank") iframe.src = PROXY_URL;
-            
             document.getElementById('main-page').style.display = 'none';
-            document.getElementById('classroom-container').style.display = 'none';
             document.getElementById('quasar-container').style.display = 'block';
-            document.title = "Google Docs"; 
             estSurQuasar = true;
         }
 
-        function afficherClassroom() {
-            document.getElementById('quasar-container').style.display = 'none';
-            document.getElementById('classroom-container').style.display = 'block';
-            document.title = "Classes";
-            estSurQuasar = false;
-        }
-
         function fermerTout() {
-            document.querySelectorAll('.iframe-container').forEach(el => el.style.display = 'none');
-            document.getElementById('main-page').style.display = 'block';
-            document.getElementById('site-iframe').src = "about:blank";
-            document.title = "Blox Fruits - Home";
-            estSurQuasar = false;
-            toucheTapees = "";
+            location.reload(); // Recharge la page pour tout effacer proprement
         }
     </script>
-
 </body>
 </html>
