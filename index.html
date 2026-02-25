@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Site Blox Fruits</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background-color: black;
+        }
+
+        /* Utilisation de votre fichier local favicon.png */
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-image: url('favicon.png'); 
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        /* Bouton invisible en bas à gauche */
+        #secret-btn {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 150px;
+            height: 150px;
+            background: transparent;
+            border: none;
+            cursor: default; /* Reste discret */
+            z-index: 10;
+        }
+
+        /* Bouton Annuler en haut à droite */
+        #cancel-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: 1px solid white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: sans-serif;
+            z-index: 20;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="background">
+        <button id="cancel-btn" onclick="retour()">Annuler</button>
+        <!-- Ce bouton est totalement invisible -->
+        <button id="secret-btn" onclick="ouvrirSite()"></button>
+    </div>
+
+    <script>
+        function ouvrirSite() {
+            window.location.href = "https://quasar.ub.phuri.cc";
+        }
+
+        function retour() {
+            if(confirm("Voulez-vous quitter ?")) {
+                document.body.innerHTML = "<div style='background:black; height:100vh; display:flex; justify-content:center; align-items:center;'><h1 style='color:white; font-family:sans-serif;'>Fermé</h1></div>";
+            }
+        }
+    </script>
+
+</body>
+</html>
