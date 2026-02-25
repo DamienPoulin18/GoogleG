@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blox Fruits Full Screen</title>
+    <title>Blox Fruits - Quasar Interface</title>
     <style>
-        /* Supprime toutes les bordures blanches */
         body, html {
             margin: 0;
             padding: 0;
@@ -13,27 +12,24 @@
             width: 100%;
             overflow: hidden;
             background-color: black;
+            font-family: sans-serif;
         }
 
-        .background-container {
+        /* L'IMAGE DE DÉPART (COUVRANT TOUT) */
+        #main-page {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            
-            /* Ton image RedKing.png */
             background-image: url('RedKing.png'); 
-            
-            /* 'cover' force l'image à couvrir TOUT l'écran (côtés inclus) */
-            background-size: cover; 
-            
-            /* Centre l'image pour que le milieu soit toujours visible */
+            background-size: cover;
             background-position: center;
-            background-repeat: no-repeat;
+            z-index: 10;
+            display: block;
         }
 
-        /* Bouton invisible (Bas Gauche) */
+        /* LE BOUTON INVISIBLE (BAS GAUCHE) */
         #secret-btn {
             position: absolute;
             bottom: 0;
@@ -43,41 +39,65 @@
             background: transparent;
             border: none;
             cursor: default;
-            z-index: 10;
         }
 
-        /* Bouton Annuler (Haut Droite) */
+        /* L'INTERFACE QUASAR (CACHÉE AU DÉBUT) */
+        #quasar-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 20;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* LE BOUTON ANNULER (VISIBLE QUAND QUASAR EST OUVERT) */
         #cancel-btn {
             position: absolute;
             top: 20px;
             right: 20px;
-            padding: 10px 20px;
-            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 25px;
+            background: rgba(255, 0, 0, 0.8);
             color: white;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 5px;
-            font-family: sans-serif;
+            border: 2px solid white;
+            border-radius: 8px;
+            font-weight: bold;
             cursor: pointer;
-            z-index: 20;
+            z-index: 30; /* Toujours au-dessus de Quasar */
         }
     </style>
 </head>
 <body>
 
-    <div class="background-container">
-        <button id="cancel-btn" onclick="annuler()">Annuler</button>
+    <!-- ÉTAPE 1 : L'IMAGE -->
+    <div id="main-page">
         <button id="secret-btn" onclick="ouvrirQuasar()"></button>
+    </div>
+
+    <!-- ÉTAPE 2 : LE SITE QUASAR DANS UNE FENÊTRE -->
+    <div id="quasar-container">
+        <button id="cancel-btn" onclick="fermerQuasar()">ANNULER</button>
+        <iframe src="https://quasar.ub.phuri.cc" id="site-iframe"></iframe>
     </div>
 
     <script>
         function ouvrirQuasar() {
-            // Ouvre le site cible
-            window.location.href = "https://quasar.ub.phuri.cc";
+            // On cache l'image et on montre le site Quasar
+            document.getElementById('main-page').style.display = 'none';
+            document.getElementById('quasar-container').style.display = 'block';
         }
 
-        function annuler() {
-            // Retour à un écran noir
-            document.body.innerHTML = "<div style='background:black; height:100vh;'></div>";
+        function fermerQuasar() {
+            // On cache Quasar et on revient à l'image
+            document.getElementById('quasar-container').style.display = 'none';
+            document.getElementById('main-page').style.display = 'block';
         }
     </script>
 
