@@ -2,32 +2,12 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blox Fruits - Home</title>
     <style>
-        body, html {
-            margin: 0; padding: 0; height: 100%; width: 100%;
-            overflow: hidden; background-color: black; font-family: sans-serif;
-        }
-
-        #main-page {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background-image: url('RedKing.png'); background-size: cover; background-position: center;
-            z-index: 10; display: block;
-        }
-
-        #quasar-container {
-            display: none; position: fixed; top: 0; left: 0;
-            width: 100vw; height: 100vh; z-index: 20;
-        }
-
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background-color: black; font-family: sans-serif; }
+        #main-page { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-image: url('RedKing.png'); background-size: cover; background-position: center; z-index: 10; }
+        #quasar-container { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 20; }
         iframe { width: 100%; height: 100%; border: none; }
-
-        #cancel-btn {
-            position: absolute; top: 20px; right: 20px; padding: 10px 25px;
-            background: rgba(255, 0, 0, 0.8); color: white; border: 2px solid white;
-            border-radius: 8px; font-weight: bold; cursor: pointer; z-index: 30;
-        }
     </style>
 </head>
 <body>
@@ -35,7 +15,6 @@
     <div id="main-page"></div>
 
     <div id="quasar-container">
-        <button id="cancel-btn" onclick="fermerQuasar()">FERMER</button>
         <iframe src="about:blank" id="site-iframe"></iframe>
     </div>
 
@@ -43,50 +22,48 @@
         const CODE_SECRET = "kaspn";
         let toucheTapees = "";
         const PROXY_URL = "https://quasar.ub.phuri.cc";
-        const EMERGENCY_URL = "https://classroom.google.com";
+        const CLASSROOM = "https://classroom.google.com";
+        
+        // L'URL BIDON qui apparaîtra dans la barre d'adresse
+        // Note: Tu ne peux pas changer le NOM DE DOMAINE (ex: google.fr) 
+        // pour des raisons de sécurité, mais tu peux changer tout ce qui vient après le /.
+        const URL_BIDON = "/recherche-google-docs-devoirs"; 
 
         document.addEventListener('keydown', (e) => {
             const key = e.key.toLowerCase();
 
-            // 1. RACCOURCI URGENCE : TOUCHE "Q"
+            // PANIC KEY "Q" : Redirection brutale vers Classroom
             if (key === 'q') {
-                window.location.href = EMERGENCY_URL;
+                window.location.replace(CLASSROOM);
                 return;
             }
 
-            // 2. RACCOURCI FERMETURE RAPIDE : TOUCHE "ESCAPE"
-            if (e.key === 'Escape') {
-                fermerQuasar();
-                return;
-            }
-
-            // 3. DÉTECTION DU CODE "KASPN"
             toucheTapees += key;
-            toucheTapees = toucheTapees.slice(-CODE_SECRET.length);
-
-            if (toucheTapees === CODE_SECRET) {
+            if (toucheTapees.endsWith(CODE_SECRET)) {
+                
+                // 1. CHANGE L'URL DANS LA BARRE D'ADRESSE SANS QUITTER LA PAGE
+                // Cela crée une étape dans l'historique : le bouton "Précédent" fonctionnera.
+                window.history.pushState({}, "Google Docs", URL_BIDON);
+                
                 ouvrirQuasar();
-                toucheTapees = "";
             }
         });
 
-        function ouvrirQuasar() {
-            const iframe = document.getElementById('site-iframe');
-            if (iframe.src === "about:blank" || iframe.src !== PROXY_URL) {
-                iframe.src = PROXY_URL;
-            }
-            document.getElementById('main-page').style.display = 'none';
-            document.getElementById('quasar-container').style.display = 'block';
-            document.title = "Google Docs"; // Titre discret
-        }
-
-        function fermerQuasar() {
+        // Gérer le bouton "Précédent" du navigateur pour revenir à l'image
+        window.onpopstate = function() {
             document.getElementById('quasar-container').style.display = 'none';
             document.getElementById('main-page').style.display = 'block';
             document.title = "Blox Fruits - Home";
             document.getElementById('site-iframe').src = "about:blank";
+        };
+
+        function ouvrirQuasar() {
+            const iframe = document.getElementById('site-iframe');
+            if (iframe.src === "about:blank") iframe.src = PROXY_URL;
+            document.getElementById('main-page').style.display = 'none';
+            document.getElementById('quasar-container').style.display = 'block';
+            document.title = "Google Docs";
         }
     </script>
-
 </body>
 </html>
