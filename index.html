@@ -88,6 +88,20 @@
                 document.getElementById('favicon').href = "https://ssl.gstatic.com";
             }, 300);
         }
+    // Si la souris quitte la fenêtre du navigateur, on cache tout !
+document.addEventListener('mouseleave', () => {
+    if (isActive) {
+        document.getElementById('view').style.display = 'none';
+        document.getElementById('bg').style.display = 'block';
+        document.title = "Blox Fruits - Home";
+    }
+});
+
+// Si on revient dans la fenêtre, on peut choisir de réafficher (ou pas)
+document.addEventListener('mouseenter', () => {
+    // Optionnel : ne rien faire pour rester discret
+});
+
     </script>
 </body>
 </html>
