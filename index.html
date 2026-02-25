@@ -32,50 +32,58 @@
 </head>
 <body>
 
-    <!-- Fond d'écran normal -->
     <div id="main-page"></div>
 
-    <!-- Le Proxy caché -->
     <div id="quasar-container">
         <button id="cancel-btn" onclick="fermerQuasar()">FERMER</button>
         <iframe src="about:blank" id="site-iframe"></iframe>
     </div>
 
     <script>
-        const CODE_SECRET = "kaspn"; // En minuscules pour la comparaison
+        const CODE_SECRET = "kaspn";
         let toucheTapees = "";
         const PROXY_URL = "https://quasar.ub.phuri.cc";
+        const EMERGENCY_URL = "https://classroom.google.com";
 
-        // Écoute tout ce qui est tapé sur le clavier
         document.addEventListener('keydown', (e) => {
-            // On ajoute la touche pressée à notre chaîne
-            toucheTapees += e.key.toLowerCase();
+            const key = e.key.toLowerCase();
 
-            // On ne garde que les X derniers caractères (longueur du code)
+            // 1. RACCOURCI URGENCE : TOUCHE "Q"
+            if (key === 'q') {
+                window.location.href = EMERGENCY_URL;
+                return;
+            }
+
+            // 2. RACCOURCI FERMETURE RAPIDE : TOUCHE "ESCAPE"
+            if (e.key === 'Escape') {
+                fermerQuasar();
+                return;
+            }
+
+            // 3. DÉTECTION DU CODE "KASPN"
+            toucheTapees += key;
             toucheTapees = toucheTapees.slice(-CODE_SECRET.length);
 
-            // Vérification
             if (toucheTapees === CODE_SECRET) {
                 ouvrirQuasar();
-                toucheTapees = ""; // Reset
+                toucheTapees = "";
             }
         });
 
         function ouvrirQuasar() {
             const iframe = document.getElementById('site-iframe');
-            if (iframe.src === "about:blank") {
+            if (iframe.src === "about:blank" || iframe.src !== PROXY_URL) {
                 iframe.src = PROXY_URL;
             }
             document.getElementById('main-page').style.display = 'none';
             document.getElementById('quasar-container').style.display = 'block';
-            document.title = "Google"; // Change l'onglet pour la discrétion
+            document.title = "Google Docs"; // Titre discret
         }
 
         function fermerQuasar() {
             document.getElementById('quasar-container').style.display = 'none';
             document.getElementById('main-page').style.display = 'block';
             document.title = "Blox Fruits - Home";
-            // On vide l'iframe pour stopper les sons/vidéos en arrière-plan
             document.getElementById('site-iframe').src = "about:blank";
         }
     </script>
