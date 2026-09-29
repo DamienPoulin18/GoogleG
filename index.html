@@ -3,25 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <title>Blox Fruits - Home</title>
-    <link id="fav" rel="icon" type="image/x-icon" href="https://www.google.com">
+    <link id="fav" rel="icon" type="image/x-icon" href="https://google.com">
     <style>
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; font-family: sans-serif; }
         #bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: url('RedKing.png') center/cover; z-index: 5; }
-        /* La zone de vue est mise en z-index 10 pour être au-dessus */
         #view { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; background: #fff; }
         iframe { width: 100%; height: 100%; border: none; }
-        
-        /* Overlay invisible pour capter la souris même sur l'iframe */
         #sensor { position: fixed; top: 0; left: 0; width: 100%; height: 10px; z-index: 100; pointer-events: all; }
+
+        /* --- STYLES ANNONCE GLOBALE --- */
+        #global-announcement-banner {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #ff3333;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            z-index: 10005; /* Visible par-dessus le contenu */
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        #announcement-prompt {
+            display: none;
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translate(-50%, -20%);
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            z-index: 10010; /* Premier plan pour la saisie */
+            width: 400px;
+            color: #000;
+        }
+
+        #announcement-prompt input {
+            width: 100%;
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            margin-top: 10px;
+        }
+
+        #announcement-prompt p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #666;
+        }
     </style>
 </head>
 <body oncontextmenu="return false;">
 
-    <!-- Zone invisible tout en haut qui capte si la souris sort par le haut -->
     <div id="sensor"></div>
-
     <div id="bg"></div>
     <div id="view"><iframe id="ifr" src="about:blank"></iframe></div>
+
+    <!-- --- ÉLÉMENTS HTML ANNONCE --- -->
+    <div id="global-announcement-banner">
+        <span id="announcement-text"></span>
+    </div>
+
+    <div id="announcement-prompt">
+        <p><strong>Créer une annonce globale</strong></p>
+        <input type="text" id="announcement-input" placeholder="Texte de l'annonce...">
+        <p style="font-size: 0.8rem; color: #999; margin-top: 8px;">Appuyez sur Entrée pour diffuser, Échap pour fermer</p>
+    </div>
 
     <script>
         const _0x = (s) => s.split('').map(c => String.fromCharCode(c.charCodeAt(0) - 1)).join('');
@@ -31,46 +85,51 @@
 
         let input = "";
         let isActive = false;
+        let announcementTimer = null; // Variable pour stocker le minuteur de 5 secondes
 
-        // --- CORRECTION AUTO-HIDE ---
-        // Détecte quand la souris quitte la fenêtre vers le haut (barre d'onglets)
-        // DÉTECTION : SOURIS QUI QUITTE LA FENÊTRE
+        // Configuration du canal de communication
+        const canalAnnonce = new BroadcastChannel('annonces_site');
+        const promptBox = document.getElementById('announcement-prompt');
+        const inputField = document.getElementById('announcement-input');
+        const banner = document.getElementById('global-announcement-banner');
+        const bannerText = document.getElementById('announcement-text');
 
+        function fermerInstantement() {
+            const v = document.getElementById('view');
+            const bg = document.getElementById('bg');
+            const f = document.getElementById('ifr');
 
-// SÉCURITÉ SUPPLÉMENTAIRE : SI L'ONGLET PERD LE FOCUS
+            v.style.display = 'none'; 
+            bg.style.display = 'block'; 
+            f.src = 'about:blank'; 
+            document.title = "Blox Fruits - Home";
+            isActive = false;
+            input = ""; 
+        }
 
-
-
-        // Détecte si on change d'onglet ou si on réduit la fenêtre
-        // DÉTECTION DU CHANGEMENT D'ONGLET (VISIBILITY API)
-
-function fermerInstantement() {
-    const v = document.getElementById('view');
-    const bg = document.getElementById('bg');
-    const f = document.getElementById('ifr');
-
-    // 1. On cache le proxy
-    v.style.display = 'none'; 
-    
-    // 2. On réaffiche l'image Blox Fruits
-    bg.style.display = 'block'; 
-    
-    // 3. ON VIDE L'IFRAME (Indispensable pour que Quasar disparaisse du réseau)
-    f.src = 'about:blank'; 
-    
-    // 4. On remet le titre normal
-    document.title = "Blox Fruits - Home";
-    
-    isActive = false;
-    input = ""; // Reset du code secret
-}
-
-
-        // Détecte si la fenêtre perd le focus (Alt+Tab ou clic ailleurs)
-        
+        // --- GESTION DU CLAVIER ---
         document.addEventListener('keydown', (e) => {
             const k = e.key.toLowerCase();
 
+            // Touche 'G' pour ouvrir l'annonce
+            if (k === 'g' && document.activeElement !== inputField) {
+                e.preventDefault(); 
+                promptBox.style.display = 'block';
+                inputField.focus();
+                return;
+            }
+
+            // Fermer la boîte de saisie avec Échap
+            if (e.key === 'Escape') {
+                promptBox.style.display = 'none';
+                inputField.value = '';
+                return;
+            }
+
+            // Bloque le script d'origine si on tape dans la barre d'annonce
+            if (document.activeElement === inputField) return;
+
+            // Vos touches d'origine (Q et mot de passe jason)
             if (k === 'q') {
                 window.location.replace(C_URL);
                 return;
@@ -84,6 +143,46 @@ function fermerInstantement() {
             }
             if (input.length > 10) input = "";
         });
+
+        // Envoi de l'annonce avec Entrée
+        inputField.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const message = inputField.value.trim();
+                if (message !== '') {
+                    // Diffuser aux autres onglets
+                    canalAnnonce.postMessage({ type: 'NEW_ANNOUNCEMENT', text: message });
+                    // L'afficher sur l'onglet actuel
+                    afficherAnnonce(message);
+                    
+                    promptBox.style.display = 'none';
+                    inputField.value = '';
+                }
+            }
+        });
+
+        // Réception des annonces des autres onglets
+        canalAnnonce.onmessage = (evenement) => {
+            if (evenement.data && evenement.data.type === 'NEW_ANNOUNCEMENT') {
+                afficherAnnonce(evenement.data.text);
+            }
+        };
+
+        // --- ENCLENCHEMENT ET MINUTEUR DE 5 SECONDES ---
+        function afficherAnnonce(texte) {
+            // Si un minuteur tournait déjà pour une ancienne annonce, on l'annule
+            if (announcementTimer) {
+                clearTimeout(announcementTimer);
+            }
+
+            bannerText.textContent = texte;
+            banner.style.display = 'block';
+
+            // Lance le décompte de 5000 millisecondes (5 secondes) avant de masquer
+            announcementTimer = setTimeout(() => {
+                banner.style.display = 'none';
+                bannerText.textContent = '';
+            }, 5000);
+        }
 
         function launch() {
             const v = document.getElementById('view');
