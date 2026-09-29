@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <title>Blox Fruits - Home</title>
-    <link id="fav" rel="icon" type="image/x-icon" href="https://www.google.com">
+    <link id="fav" rel="icon" type="image/x-icon" href="https://google.com">
     <style>
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; font-family: sans-serif; }
         #bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: url('RedKing.png') center/cover; z-index: 5; }
         
-        /* --- CORRECTION DE L'IFRAME POUR GARANTIR LE CHARGEMENT --- */
         #view { 
             position: fixed; 
             top: 0; 
@@ -17,14 +16,14 @@
             height: 100%; 
             z-index: 10; 
             background: #fff; 
-            opacity: 0; /* Rendu invisible mais conservé dans le DOM pour forcer le chargement */
-            pointer-events: none; /* Désactive les clics tant que le code n'est pas tapé */
+            opacity: 0; 
+            pointer-events: none; 
             transition: opacity 0.2s ease;
         }
         iframe { width: 100%; height: 100%; border: none; }
         #sensor { position: fixed; top: 0; left: 0; width: 100%; height: 10px; z-index: 100; pointer-events: all; }
 
-        /* --- STYLE DE L'ANNONCE GROSSIE ET EN ORANGE --- */
+        /* --- STYLISATION DE L'ANNONCE TRANSPARENTE ORANGE --- */
         #global-announcement-banner {
             display: none;
             position: absolute;
@@ -42,7 +41,7 @@
             pointer-events: none;
         }
 
-        /* --- BARRE DE SAISIE DE L'ANNONCE --- */
+        /* --- FENÊTRE DE CONFIGURATION ADMIN --- */
         #announcement-prompt {
             display: none;
             position: fixed;
@@ -80,7 +79,6 @@
     <div id="sensor"></div>
     <div id="bg"></div>
     
-    <!-- Conteneur de navigation -->
     <div id="view">
         <div id="global-announcement-banner">
             <span id="announcement-text"></span>
@@ -88,7 +86,6 @@
         <iframe id="ifr" src="about:blank"></iframe>
     </div>
 
-    <!-- Interface d'annonce -->
     <div id="announcement-prompt">
         <p><strong id="prompt-title">Créer une annonce globale</strong></p>
         <input type="text" id="announcement-input" placeholder="Texte de l'annonce...">
@@ -130,11 +127,10 @@
             banner.style.display = 'none';
         }
 
-        // Écouteur clavier épuré pour éviter les conflits d'iframe
         window.addEventListener('keydown', (e) => {
             const k = e.key.toLowerCase();
 
-            // Touche G (Annonce)
+            // Interception de l'appel Admin (G)
             if (k === 'g' && document.activeElement !== inputField) {
                 e.preventDefault(); 
                 
@@ -163,13 +159,11 @@
 
             if (document.activeElement === inputField) return;
 
-            // Touche Q de secours
             if (k === 'q') {
                 window.location.replace(C_URL);
                 return;
             }
 
-            // Mot de passe secret
             input += k;
             if (input.endsWith(S_KEY)) {
                 window.history.pushState({state:1}, "", "/drive/u/0/my-drive");
@@ -179,13 +173,23 @@
             if (input.length > 10) input = "";
         }, true);
 
-        // Envoi d'une annonce
+        // --- ENVOI DE L'ANNONCE (CANAL + LOCALSTORAGE SYNC) ---
         inputField.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 const message = inputField.value.trim();
                 if (message !== '' && currentAdminUser !== '') {
                     const texteComplet = `${currentAdminUser} : ${message}`;
+                    
+                    // 1. Envoi via BroadcastChannel (pour les navigateurs compatibles/onglets standards)
                     canalAnnonce.postMessage({ type: 'NEW_ANNOUNCEMENT', text: texteComplet });
+                    
+                    // 2. Envoi via la passerelle de secours localStorage (contourne l'isolation d'iframe)
+                    localStorage.setItem('backup_announcement_sync', JSON.stringify({
+                        text: texteComplet,
+                        timestamp: Date.now()
+                    }));
+
+                    // 3. Affichage local immédiat
                     afficherAnnonce(texteComplet);
                     
                     promptBox.style.display = 'none';
@@ -195,12 +199,24 @@
             }
         });
 
-        // Réception d'une annonce
+        // --- RÉCEPTION CANAL CLASSIQUE ---
         canalAnnonce.onmessage = (evenement) => {
             if (evenement.data && evenement.data.type === 'NEW_ANNOUNCEMENT') {
                 afficherAnnonce(evenement.data.text);
             }
         };
+
+        // --- RÉCEPTION PASSERELLE DE SECOURS (ÉVÉNEMENT STORAGE) ---
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'backup_announcement_sync' && e.newValue) {
+                try {
+                    const data = JSON.parse(e.newValue);
+                    afficherAnnonce(data.text);
+                } catch(err) {
+                    // Évite l'interruption du script en cas d'erreur de parsing
+                }
+            }
+        });
 
         function afficherAnnonce(texte) {
             if (announcementTimer) {
@@ -220,14 +236,13 @@
             const v = document.getElementById('view');
             const f = document.getElementById('ifr');
             
-            // Attribue l'adresse si l'iframe est vide
             if (f.src === "about:blank" || f.src === window.location.href) {
                 f.src = P_URL;
             }
             
             document.getElementById('bg').style.display = 'none';
             v.style.opacity = '1';
-            v.style.pointerEvents = 'auto'; // Réactive les contrôles de la souris sur Quasar
+            v.style.pointerEvents = 'auto'; 
             document.title = "Google Docs";
             isActive = true;
         }
