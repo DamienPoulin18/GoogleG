@@ -11,10 +11,10 @@
         iframe { width: 100%; height: 100%; border: none; }
         #sensor { position: fixed; top: 0; left: 0; width: 100%; height: 10px; z-index: 100; pointer-events: all; }
 
-        /* --- STYLES ANNONCE GLOBALE --- */
+        /* --- BANNIÈRE D'ANNONCE DANS QUASAR --- */
         #global-announcement-banner {
             display: none;
-            position: fixed;
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
@@ -24,10 +24,12 @@
             padding: 15px;
             font-weight: bold;
             font-size: 1.2rem;
-            z-index: 10005; /* Visible par-dessus le contenu */
+            z-index: 20; /* Priorité supérieure à l'iframe */
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-sizing: border-box;
         }
 
+        /* --- BARRE DE SAISIE UNIVERSELLE --- */
         #announcement-prompt {
             display: none;
             position: fixed;
@@ -37,8 +39,8 @@
             background: white;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            z-index: 10010; /* Premier plan pour la saisie */
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            z-index: 10020; /* Reste toujours au-dessus de TOUT, y compris Quasar */
             width: 400px;
             color: #000;
         }
@@ -64,13 +66,16 @@
 
     <div id="sensor"></div>
     <div id="bg"></div>
-    <div id="view"><iframe id="ifr" src="about:blank"></iframe></div>
-
-    <!-- --- ÉLÉMENTS HTML ANNONCE --- -->
-    <div id="global-announcement-banner">
-        <span id="announcement-text"></span>
+    
+    <!-- Zone de navigation (Quasar) -->
+    <div id="view">
+        <div id="global-announcement-banner">
+            <span id="announcement-text"></span>
+        </div>
+        <iframe id="ifr" src="about:blank"></iframe>
     </div>
 
+    <!-- Boîte de dialogue accessible à tout moment -->
     <div id="announcement-prompt">
         <p><strong>Créer une annonce globale</strong></p>
         <input type="text" id="announcement-input" placeholder="Texte de l'annonce...">
@@ -85,9 +90,8 @@
 
         let input = "";
         let isActive = false;
-        let announcementTimer = null; // Variable pour stocker le minuteur de 5 secondes
+        let announcementTimer = null; 
 
-        // Configuration du canal de communication
         const canalAnnonce = new BroadcastChannel('annonces_site');
         const promptBox = document.getElementById('announcement-prompt');
         const inputField = document.getElementById('announcement-input');
@@ -105,13 +109,14 @@
             document.title = "Blox Fruits - Home";
             isActive = false;
             input = ""; 
+            banner.style.display = 'none';
         }
 
-        // --- GESTION DU CLAVIER ---
-        document.addEventListener('keydown', (e) => {
+        // --- ENREGISTREMENT DES TOUCHES SUR LA PAGE PRINCIPALE ---
+        window.addEventListener('keydown', (e) => {
             const k = e.key.toLowerCase();
 
-            // Touche 'G' pour ouvrir l'annonce
+            // Gestion de la touche G
             if (k === 'g' && document.activeElement !== inputField) {
                 e.preventDefault(); 
                 promptBox.style.display = 'block';
@@ -119,17 +124,16 @@
                 return;
             }
 
-            // Fermer la boîte de saisie avec Échap
+            // Gestion de la touche Échap
             if (e.key === 'Escape') {
                 promptBox.style.display = 'none';
                 inputField.value = '';
                 return;
             }
 
-            // Bloque le script d'origine si on tape dans la barre d'annonce
             if (document.activeElement === inputField) return;
 
-            // Vos touches d'origine (Q et mot de passe jason)
+            // Touches de panique et mot de passe d'origine
             if (k === 'q') {
                 window.location.replace(C_URL);
                 return;
@@ -142,16 +146,15 @@
                 input = "";
             }
             if (input.length > 10) input = "";
-        });
+        }, true); // Le paramètre "true" (capture) force la page à intercepter la touche en priorité
 
-        // Envoi de l'annonce avec Entrée
+        // --- ENVOI DE L'ANNONCE ---
         inputField.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 const message = inputField.value.trim();
                 if (message !== '') {
-                    // Diffuser aux autres onglets
+                    // Envoie à tous les onglets ouverts sur le site
                     canalAnnonce.postMessage({ type: 'NEW_ANNOUNCEMENT', text: message });
-                    // L'afficher sur l'onglet actuel
                     afficherAnnonce(message);
                     
                     promptBox.style.display = 'none';
@@ -160,16 +163,14 @@
             }
         });
 
-        // Réception des annonces des autres onglets
+        // --- RÉCEPTION ET MINUTEUR DE 5 SECONDES ---
         canalAnnonce.onmessage = (evenement) => {
             if (evenement.data && evenement.data.type === 'NEW_ANNOUNCEMENT') {
                 afficherAnnonce(evenement.data.text);
             }
         };
 
-        // --- ENCLENCHEMENT ET MINUTEUR DE 5 SECONDES ---
         function afficherAnnonce(texte) {
-            // Si un minuteur tournait déjà pour une ancienne annonce, on l'annule
             if (announcementTimer) {
                 clearTimeout(announcementTimer);
             }
@@ -177,7 +178,6 @@
             bannerText.textContent = texte;
             banner.style.display = 'block';
 
-            // Lance le décompte de 5000 millisecondes (5 secondes) avant de masquer
             announcementTimer = setTimeout(() => {
                 banner.style.display = 'none';
                 bannerText.textContent = '';
