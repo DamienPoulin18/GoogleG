@@ -4,8 +4,23 @@
     <meta charset="UTF-8">
     <title>Blox Fruits - Home</title>
     <link id="fav" rel="icon" type="image/x-icon" href="https://google.com">
+    
+    <!-- IMPORTATION DE LA POLICE DE TYPE CANVA DISPLAY (SYNE / COINS TRÈS ARRONDIS ET JOLIS) -->
+    <link rel="preconnect" href="https://googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com/css2?family=Syne:wght@700;800&display=swap" rel="stylesheet">
+
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; font-family: sans-serif; }
+        body, html { 
+            margin: 0; 
+            padding: 0; 
+            height: 100%; 
+            width: 100%; 
+            overflow: hidden; 
+            background: #000; 
+            font-family: 'Syne', system-ui, -apple-system, sans-serif; 
+        }
+        
         #bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: url('RedKing.png') center/cover; z-index: 5; }
         
         #view { 
@@ -23,20 +38,22 @@
         iframe { width: 100%; height: 100%; border: none; }
         #sensor { position: fixed; top: 0; left: 0; width: 100%; height: 10px; z-index: 100; pointer-events: all; }
 
-        /* --- STYLISATION DE L'ANNONCE TRANSPARENTE ORANGE --- */
+        /* --- STYLISATION DE L'ANNONCE AVEC POLICE STYLE CANVA DISPLAY --- */
         #global-announcement-banner {
             display: none;
             position: absolute;
-            top: 25px; 
+            top: 30px; 
             left: 0;
             width: 100%;
             background-color: transparent;
             color: #ffaa00; 
             text-align: center;
-            font-weight: bold;
-            font-size: 2.2rem; 
+            font-family: 'Syne', sans-serif;
+            font-weight: 800; /* Style très épais et percutant */
+            font-size: 2.8rem; /* Légèrement agrandi pour faire honneur au style Display */
             z-index: 30;
-            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.9), -3px -3px 6px rgba(0, 0, 0, 0.9), 3px -3px 6px rgba(0, 0, 0, 0.9), -3px 3px 6px rgba(0, 0, 0, 0.9);
+            letter-spacing: -1px; /* Rapprochement élégant des lettres typique des titres Canva */
+            text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.95), -4px -4px 8px rgba(0, 0, 0, 0.95), 4px -4px 8px rgba(0, 0, 0, 0.95), -4px 4px 8px rgba(0, 0, 0, 0.95);
             box-sizing: border-box;
             pointer-events: none;
         }
@@ -49,9 +66,9 @@
             left: 50%;
             transform: translate(-50%, -20%);
             background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            padding: 24px;
+            border-radius: 16px; /* Coins encore plus doux et modernes */
+            box-shadow: 0 12px 40px rgba(0,0,0,0.35);
             z-index: 10020;
             width: 400px;
             color: #000;
@@ -59,18 +76,24 @@
 
         #announcement-prompt input {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             font-size: 1rem;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            font-family: inherit;
+            border: 1px solid #ddd;
+            border-radius: 8px;
             box-sizing: border-box;
-            margin-top: 10px;
+            margin-top: 12px;
+            outline: none;
+        }
+        
+        #announcement-prompt input:focus {
+            border-color: #ffaa00;
         }
 
         #announcement-prompt p {
             margin: 0;
-            font-size: 0.9rem;
-            color: #666;
+            font-size: 0.95rem;
+            color: #444;
         }
     </style>
 </head>
@@ -89,7 +112,7 @@
     <div id="announcement-prompt">
         <p><strong id="prompt-title">Créer une annonce globale</strong></p>
         <input type="text" id="announcement-input" placeholder="Texte de l'annonce...">
-        <p style="font-size: 0.8rem; color: #999; margin-top: 8px;">Appuyez sur Entrée pour diffuser, Échap pour fermer</p>
+        <p style="font-size: 0.8rem; color: #888; margin-top: 10px;">Appuyez sur Entrée pour diffuser, Échap pour fermer</p>
     </div>
 
     <script>
@@ -98,7 +121,7 @@
         const C_URL = _0x("iuuqt;00dmbttsppn/hpphmf/dpn0v010i");
         const S_KEY = _0x("lbtqo");
 
-        const ADMIN_CODE = "admin123"; 
+        const ADMIN_CODE = "#ws"; 
 
         let input = "";
         let isActive = false;
@@ -130,7 +153,6 @@
         window.addEventListener('keydown', (e) => {
             const k = e.key.toLowerCase();
 
-            // Interception de l'appel Admin (G)
             if (k === 'g' && document.activeElement !== inputField) {
                 e.preventDefault(); 
                 
@@ -173,23 +195,19 @@
             if (input.length > 10) input = "";
         }, true);
 
-        // --- ENVOI DE L'ANNONCE (CANAL + LOCALSTORAGE SYNC) ---
         inputField.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 const message = inputField.value.trim();
                 if (message !== '' && currentAdminUser !== '') {
                     const texteComplet = `${currentAdminUser} : ${message}`;
                     
-                    // 1. Envoi via BroadcastChannel (pour les navigateurs compatibles/onglets standards)
                     canalAnnonce.postMessage({ type: 'NEW_ANNOUNCEMENT', text: texteComplet });
                     
-                    // 2. Envoi via la passerelle de secours localStorage (contourne l'isolation d'iframe)
                     localStorage.setItem('backup_announcement_sync', JSON.stringify({
                         text: texteComplet,
                         timestamp: Date.now()
                     }));
 
-                    // 3. Affichage local immédiat
                     afficherAnnonce(texteComplet);
                     
                     promptBox.style.display = 'none';
@@ -199,22 +217,18 @@
             }
         });
 
-        // --- RÉCEPTION CANAL CLASSIQUE ---
         canalAnnonce.onmessage = (evenement) => {
             if (evenement.data && evenement.data.type === 'NEW_ANNOUNCEMENT') {
                 afficherAnnonce(evenement.data.text);
             }
         };
 
-        // --- RÉCEPTION PASSERELLE DE SECOURS (ÉVÉNEMENT STORAGE) ---
         window.addEventListener('storage', (e) => {
             if (e.key === 'backup_announcement_sync' && e.newValue) {
                 try {
                     const data = JSON.parse(e.newValue);
                     afficherAnnonce(data.text);
-                } catch(err) {
-                    // Évite l'interruption du script en cas d'erreur de parsing
-                }
+                } catch(err) {}
             }
         });
 
