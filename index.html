@@ -3,30 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <title>Blox Fruits - Home</title>
-    <link id="fav" rel="icon" type="image/x-icon" href="https://google.com">
+    <link id="fav" rel="icon" type="image/x-icon" href="https://www.google.com">
     <style>
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; font-family: sans-serif; }
         #bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: url('RedKing.png') center/cover; z-index: 5; }
-        #view { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; background: #fff; }
+        
+        /* --- CORRECTION DE L'IFRAME POUR GARANTIR LE CHARGEMENT --- */
+        #view { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            z-index: 10; 
+            background: #fff; 
+            opacity: 0; /* Rendu invisible mais conservé dans le DOM pour forcer le chargement */
+            pointer-events: none; /* Désactive les clics tant que le code n'est pas tapé */
+            transition: opacity 0.2s ease;
+        }
         iframe { width: 100%; height: 100%; border: none; }
         #sensor { position: fixed; top: 0; left: 0; width: 100%; height: 10px; z-index: 100; pointer-events: all; }
 
-        /* --- STYLE DE L'ANNONCE TRANSPARENTE DANS QUASAR --- */
+        /* --- STYLE DE L'ANNONCE GROSSIE ET EN ORANGE --- */
         #global-announcement-banner {
             display: none;
             position: absolute;
-            top: 15px; /* Décalé légèrement du bord supérieur pour l'esthétique */
+            top: 25px; 
             left: 0;
             width: 100%;
-            background-color: transparent; /* Suppression du fond rouge */
-            color: #ff3333; /* Texte rouge vif pour rester très lisible sans le fond */
+            background-color: transparent;
+            color: #ffaa00; 
             text-align: center;
             font-weight: bold;
-            font-size: 1.4rem; /* Légèrement plus grand pour compenser l'absence de fond */
-            z-index: 20;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), -2px -2px 4px rgba(0, 0, 0, 0.8); /* Ombre portée noire pour que le texte reste lisible sur n'importe quel site */
+            font-size: 2.2rem; 
+            z-index: 30;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.9), -3px -3px 6px rgba(0, 0, 0, 0.9), 3px -3px 6px rgba(0, 0, 0, 0.9), -3px 3px 6px rgba(0, 0, 0, 0.9);
             box-sizing: border-box;
-            pointer-events: none; /* Permet de cliquer à travers le texte sans bloquer Quasar */
+            pointer-events: none;
         }
 
         /* --- BARRE DE SAISIE DE L'ANNONCE --- */
@@ -67,6 +80,7 @@
     <div id="sensor"></div>
     <div id="bg"></div>
     
+    <!-- Conteneur de navigation -->
     <div id="view">
         <div id="global-announcement-banner">
             <span id="announcement-text"></span>
@@ -74,6 +88,7 @@
         <iframe id="ifr" src="about:blank"></iframe>
     </div>
 
+    <!-- Interface d'annonce -->
     <div id="announcement-prompt">
         <p><strong id="prompt-title">Créer une annonce globale</strong></p>
         <input type="text" id="announcement-input" placeholder="Texte de l'annonce...">
@@ -91,7 +106,7 @@
         let input = "";
         let isActive = false;
         let announcementTimer = null; 
-        let currentAdminUser = ""; // Stocke temporairement le pseudonyme de l'admin
+        let currentAdminUser = ""; 
 
         const canalAnnonce = new BroadcastChannel('annonces_site');
         const promptBox = document.getElementById('announcement-prompt');
@@ -105,7 +120,8 @@
             const bg = document.getElementById('bg');
             const f = document.getElementById('ifr');
 
-            v.style.display = 'none'; 
+            v.style.opacity = '0'; 
+            v.style.pointerEvents = 'none';
             bg.style.display = 'block'; 
             f.src = 'about:blank'; 
             document.title = "Blox Fruits - Home";
@@ -114,20 +130,18 @@
             banner.style.display = 'none';
         }
 
-        // --- GESTION DU CLAVIER ---
+        // Écouteur clavier épuré pour éviter les conflits d'iframe
         window.addEventListener('keydown', (e) => {
             const k = e.key.toLowerCase();
 
-            // Touche G
+            // Touche G (Annonce)
             if (k === 'g' && document.activeElement !== inputField) {
                 e.preventDefault(); 
                 
-                // 1. Vérification du code d'accès
                 let tentative = prompt("Entrez le code administrateur pour faire une annonce :");
                 
                 if (tentative === ADMIN_CODE) {
-                    // 2. Demande du pseudonyme de l'utilisateur
-                    let username = prompt("Entrez votre nom d'utilisateur (ex: Rip_Motly) :", "Rip_Motly");
+                    let username = prompt("Entrez votre nom d'utilisateur :", "Rip_Motly");
                     if (username && username.trim() !== "") {
                         currentAdminUser = username.trim();
                         promptTitle.textContent = `Annonce de : ${currentAdminUser}`;
@@ -149,11 +163,13 @@
 
             if (document.activeElement === inputField) return;
 
+            // Touche Q de secours
             if (k === 'q') {
                 window.location.replace(C_URL);
                 return;
             }
 
+            // Mot de passe secret
             input += k;
             if (input.endsWith(S_KEY)) {
                 window.history.pushState({state:1}, "", "/drive/u/0/my-drive");
@@ -163,15 +179,12 @@
             if (input.length > 10) input = "";
         }, true);
 
-        // --- ENVOI DE L'ANNONCE COMPOSÉE ---
+        // Envoi d'une annonce
         inputField.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 const message = inputField.value.trim();
                 if (message !== '' && currentAdminUser !== '') {
-                    // Construction de la chaîne au format requis
                     const texteComplet = `${currentAdminUser} : ${message}`;
-                    
-                    // Diffusion globale
                     canalAnnonce.postMessage({ type: 'NEW_ANNOUNCEMENT', text: texteComplet });
                     afficherAnnonce(texteComplet);
                     
@@ -182,7 +195,7 @@
             }
         });
 
-        // --- RÉCEPTION ---
+        // Réception d'une annonce
         canalAnnonce.onmessage = (evenement) => {
             if (evenement.data && evenement.data.type === 'NEW_ANNOUNCEMENT') {
                 afficherAnnonce(evenement.data.text);
@@ -206,10 +219,15 @@
         function launch() {
             const v = document.getElementById('view');
             const f = document.getElementById('ifr');
-            if (f.src === "about:blank") f.src = P_URL;
+            
+            // Attribue l'adresse si l'iframe est vide
+            if (f.src === "about:blank" || f.src === window.location.href) {
+                f.src = P_URL;
+            }
             
             document.getElementById('bg').style.display = 'none';
-            v.style.display = 'block';
+            v.style.opacity = '1';
+            v.style.pointerEvents = 'auto'; // Réactive les contrôles de la souris sur Quasar
             document.title = "Google Docs";
             isActive = true;
         }
