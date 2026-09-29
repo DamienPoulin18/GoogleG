@@ -1,0 +1,16 @@
+{
+  "name": "google-gp",
+  "version": "1.0.0",
+  "description": "Static website with Vercel Speed Insights",
+  "type": "module",
+  "scripts": {
+    "dev": "npx http-server -p 3000",
+    "build": "echo 'Static site - no build step required'"
+  },
+  "dependencies": {
+    "@vercel/speed-insights": "^1.1.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
