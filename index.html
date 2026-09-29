@@ -11,23 +11,22 @@
         iframe { width: 100%; height: 100%; border: none; }
         #sensor { position: fixed; top: 0; left: 0; width: 100%; height: 10px; z-index: 100; pointer-events: all; }
 
-        /* --- STYLE DE L'ANNONCE GROSSIE ET EN ORANGE --- */
+        /* --- STYLE DE L'ANNONCE TRANSPARENTE DANS QUASAR --- */
         #global-announcement-banner {
             display: none;
             position: absolute;
-            top: 25px; /* Légèrement descendu pour laisser de la place à la police plus grande */
+            top: 15px; /* Décalé légèrement du bord supérieur pour l'esthétique */
             left: 0;
             width: 100%;
-            background-color: transparent;
-            color: #ffaa00; /* Magnifique orange vif et lumineux */
+            background-color: transparent; /* Suppression du fond rouge */
+            color: #ff3333; /* Texte rouge vif pour rester très lisible sans le fond */
             text-align: center;
             font-weight: bold;
-            font-size: 2.2rem; /* Taille de police fortement augmentée */
+            font-size: 1.4rem; /* Légèrement plus grand pour compenser l'absence de fond */
             z-index: 20;
-            /* Ombre noire renforcée pour faire ressortir l'orange sur fond clair */
-            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.9), -3px -3px 6px rgba(0, 0, 0, 0.9), 3px -3px 6px rgba(0, 0, 0, 0.9), -3px 3px 6px rgba(0, 0, 0, 0.9);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), -2px -2px 4px rgba(0, 0, 0, 0.8); /* Ombre portée noire pour que le texte reste lisible sur n'importe quel site */
             box-sizing: border-box;
-            pointer-events: none;
+            pointer-events: none; /* Permet de cliquer à travers le texte sans bloquer Quasar */
         }
 
         /* --- BARRE DE SAISIE DE L'ANNONCE --- */
@@ -92,7 +91,7 @@
         let input = "";
         let isActive = false;
         let announcementTimer = null; 
-        let currentAdminUser = ""; 
+        let currentAdminUser = ""; // Stocke temporairement le pseudonyme de l'admin
 
         const canalAnnonce = new BroadcastChannel('annonces_site');
         const promptBox = document.getElementById('announcement-prompt');
@@ -123,9 +122,11 @@
             if (k === 'g' && document.activeElement !== inputField) {
                 e.preventDefault(); 
                 
+                // 1. Vérification du code d'accès
                 let tentative = prompt("Entrez le code administrateur pour faire une annonce :");
                 
                 if (tentative === ADMIN_CODE) {
+                    // 2. Demande du pseudonyme de l'utilisateur
                     let username = prompt("Entrez votre nom d'utilisateur (ex: Rip_Motly) :", "Rip_Motly");
                     if (username && username.trim() !== "") {
                         currentAdminUser = username.trim();
@@ -167,8 +168,10 @@
             if (e.key === 'Enter') {
                 const message = inputField.value.trim();
                 if (message !== '' && currentAdminUser !== '') {
+                    // Construction de la chaîne au format requis
                     const texteComplet = `${currentAdminUser} : ${message}`;
                     
+                    // Diffusion globale
                     canalAnnonce.postMessage({ type: 'NEW_ANNOUNCEMENT', text: texteComplet });
                     afficherAnnonce(texteComplet);
                     
