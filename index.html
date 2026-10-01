@@ -166,16 +166,28 @@
                 return;
             }
 
-            input += k;
+                        // N'enregistrer la touche QUE si c'est une lettre ou un chiffre unique (ignore 'Shift', 'Control', etc.)
+            if (e.key.length === 1) {
+                input += k;
+            }
+
+            // Vérification immédiate du mot secret
             if (input.endsWith(S_KEY)) {
                 window.history.pushState({state:1}, "", "/drive/u/0/my-drive");
                 launch();
                 input = "";
             }
-            if (input.length > 10) input = "";
+            
+            // Si la mémoire devient trop longue, on ne garde que les 5 derniers caractères tapés 
+            // (juste assez pour contenir "kaspn") au lieu de tout effacer d'un coup !
+            if (input.length > 5) {
+                input = input.slice(-5);
+            }
 
+            // Gestion de la touche admin
             if (k === 'g') {
-                e.preventDefault(); 
+                e.preventDefault();
+
                 
                 let tentative = prompt("Entrez le code administrateur pour faire une annonce :");
                 
