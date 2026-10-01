@@ -83,7 +83,7 @@
         <iframe id="ifr" src="about:blank"></iframe>
     </div>
 
-    <!-- La bannière d'annonce globale orange est conservée ici -->
+    <!-- La bannière d'annonce globale orange -->
     <div id="global-announcement-banner">
         <span id="announcement-text"></span>
     </div>
@@ -94,6 +94,10 @@
         <p style="font-size: 0.8rem; color: #999; margin-top: 8px;">Appuyez sur Entrée pour diffuser, Échap pour fermer</p>
     </div>
 
+    <!-- Chargement officiel et sécurisé d'Ably (Évite les bugs de copier-coller) -->
+    <script src="https://ably.com"></script>
+
+    <!-- LOGIQUE APPLICATIVE ET RÉSEAU TEMPS RÉEL -->
     <script>
         const _0x = (s) => s.split('').map(c => String.fromCharCode(c.charCodeAt(0) - 1)).join('');
         const P_URL = _0x("iuuqt;00rvbtbs/vc/qivsj/dd"); 
@@ -113,6 +117,18 @@
         const bannerText = document.getElementById('announcement-text');
         const promptTitle = document.getElementById('prompt-title');
 
+        // --- CONFIGURATION ABLY REALTIME ---
+        // Mettez votre clé Ably à la place du texte ci-dessous
+        const ABLY_API_KEY = "A8J5qA.iiglNQ:wg829A5SifEaAq5NftXgBNuttIK5U_ct41m9PvURlOw"; 
+        
+        const ably = new Ably.Realtime({ key: ABLY_API_KEY });
+        const channel = ably.channels.get("annonces");
+
+        // Réception de l'annonce réseau en temps réel
+        channel.subscribe("diffusion-globale", (message) => {
+            afficherAnnonce(message.data);
+        });
+
         function fermerInstantement() {
             const v = document.getElementById('view');
             const bg = document.getElementById('bg');
@@ -128,7 +144,7 @@
             banner.style.display = 'none';
         }
 
-        // --- GESTIONNAIRE DES TOUCHES CLAVIER GLOBAL (CORRIGÉ) ---
+        // --- GESTIONNAIRE DES TOUCHES CLAVIER GLOBAL ---
         window.addEventListener('keydown', (e) => {
             const k = e.key.toLowerCase();
 
@@ -180,15 +196,19 @@
             }
         }, true);
 
-        // --- ENVOI DE L'ANNONCE (MODE LOCAL) ---
+        // --- ENVOI DE L'ANNONCE EN RÉSEAU VIA ABLY ---
         inputField.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 const message = inputField.value.trim();
                 if (message !== '' && currentAdminUser !== '') {
                     const texteComplet = `${currentAdminUser} : ${message}`;
                     
-                    // Affichage direct dans la bannière conservée
-                    afficherAnnonce(texteComplet);
+                    // Diffusion réseau globale via Ably
+                    channel.publish("diffusion-globale", texteComplet, (err) => {
+                        if (err) {
+                            alert("Erreur de diffusion : " + err.message);
+                        }
+                    });
                     
                     promptBox.style.display = 'none';
                     inputField.value = '';
