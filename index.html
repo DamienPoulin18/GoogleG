@@ -83,6 +83,7 @@
         <iframe id="ifr" src="about:blank"></iframe>
     </div>
 
+    <!-- La bannière d'annonce globale orange est conservée ici -->
     <div id="global-announcement-banner">
         <span id="announcement-text"></span>
     </div>
@@ -127,7 +128,7 @@
             banner.style.display = 'none';
         }
 
-        // --- GESTIONNAIRE DES TOUCHES CLAVIER GLOBAL ---
+        // --- GESTIONNAIRE DES TOUCHES CLAVIER GLOBAL (CORRIGÉ) ---
         window.addEventListener('keydown', (e) => {
             const k = e.key.toLowerCase();
 
@@ -145,19 +146,17 @@
                 return;
             }
 
-            // Enregistre uniquement les caractères uniques (évite de stocker "Shift", "Control"...)
             if (e.key.length === 1) {
                 input += k;
             }
 
-            // Vérification immédiate du mot secret
+            // Vérification immédiate du mot secret "kaspn"
             if (input.endsWith(S_KEY)) {
                 window.history.pushState({state:1}, "", "/drive/u/0/my-drive");
                 launch();
                 input = "";
             }
             
-            // Garde uniquement les 5 derniers caractères pour éviter la saturation de la mémoire
             if (input.length > 5) {
                 input = input.slice(-5);
             }
@@ -181,14 +180,14 @@
             }
         }, true);
 
-        // --- ENVOI DE L'ANNONCE (MODE LOCAL SANS ABLY) ---
+        // --- ENVOI DE L'ANNONCE (MODE LOCAL) ---
         inputField.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 const message = inputField.value.trim();
                 if (message !== '' && currentAdminUser !== '') {
                     const texteComplet = `${currentAdminUser} : ${message}`;
                     
-                    // Affichage direct de l'annonce en local
+                    // Affichage direct dans la bannière conservée
                     afficherAnnonce(texteComplet);
                     
                     promptBox.style.display = 'none';
