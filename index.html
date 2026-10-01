@@ -73,6 +73,9 @@
             color: #666;
         }
     </style>
+
+    <!-- Chargement officiel d'Ably (Lien alternatif pour éviter le blocage) -->
+    <script src="https://ably.io"></script>
 </head>
 <body oncontextmenu="return false;">
 
@@ -94,9 +97,6 @@
         <p style="font-size: 0.8rem; color: #999; margin-top: 8px;">Appuyez sur Entrée pour diffuser, Échap pour fermer</p>
     </div>
 
-    <!-- Chargement officiel et sécurisé d'Ably (Évite les bugs de copier-coller) -->
-    <script src="https://ably.com"></script>
-
     <!-- LOGIQUE APPLICATIVE ET RÉSEAU TEMPS RÉEL -->
     <script>
         const _0x = (s) => s.split('').map(c => String.fromCharCode(c.charCodeAt(0) - 1)).join('');
@@ -117,17 +117,24 @@
         const bannerText = document.getElementById('announcement-text');
         const promptTitle = document.getElementById('prompt-title');
 
-        // --- CONFIGURATION ABLY REALTIME ---
-        // Mettez votre clé Ably à la place du texte ci-dessous
-        const ABLY_API_KEY = "A8J5qA.iiglNQ:wg829A5SifEaAq5NftXgBNuttIK5U_ct41m9PvURlOw"; 
+        // --- INITIALISATION SÉCURISÉE D'ABLY ---
+        // METTEZ VOTRE VRAIE CLÉ API ABLY À LA PLACE DU TEXTE CI-DESSOUS
+        const ABLY_API_KEY = "VOTRE_CLE_API_ABLY_ICI"; 
         
-        const ably = new Ably.Realtime({ key: ABLY_API_KEY });
-        const channel = ably.channels.get("annonces");
+        let ably, channel;
 
-        // Réception de l'annonce réseau en temps réel
-        channel.subscribe("diffusion-globale", (message) => {
-            afficherAnnonce(message.data);
-        });
+        // On vérifie si Ably est bien chargé avant de se connecter
+        if (typeof Ably !== 'undefined') {
+            ably = new Ably.Realtime({ key: ABLY_API_KEY });
+            channel = ably.channels.get("annonces");
+
+            // Réception de l'annonce réseau en temps réel
+            channel.subscribe("diffusion-globale", (message) => {
+                afficherAnnonce(message.data);
+            });
+        } else {
+            console.error("Impossible de charger la bibliothèque Ably depuis Internet. Vérifiez votre connexion réseau.");
+        }
 
         function fermerInstantement() {
             const v = document.getElementById('view');
@@ -203,12 +210,16 @@
                 if (message !== '' && currentAdminUser !== '') {
                     const texteComplet = `${currentAdminUser} : ${message}`;
                     
-                    // Diffusion réseau globale via Ably
-                    channel.publish("diffusion-globale", texteComplet, (err) => {
-                        if (err) {
-                            alert("Erreur de diffusion : " + err.message);
-                        }
-                    });
+                    // On vérifie que la connexion réseau Ably est active avant d'envoyer
+                    if (channel) {
+                        channel.publish("diffusion-globale", texteComplet, (err) => {
+                            if (err) {
+                                alert("Erreur de diffusion : " + err.message);
+                            }
+                        });
+                    } else {
+                        alert("Erreur : La connexion avec Ably n'est pas établie.");
+                    }
                     
                     promptBox.style.display = 'none';
                     inputField.value = '';
