@@ -73,8 +73,6 @@
             color: #666;
         }
     </style>
-    <!-- Inclusion de la bibliothèque Ably en temps réel -->
-    <script src="https://ably.com"></script>
 </head>
 <body oncontextmenu="return false;">
 
@@ -96,14 +94,10 @@
     </div>
 
     <script>
-        // CONFIGURATION CONFIGURATION CONFIGURATION
-        // Insérez votre clé API Ably ici entre les guillemets
-        const ABLY_API_KEY = "A8J5qA.iiglNQ:wg829A5SifEaAq5NftXgBNuttIK5U_ct41m9PvURlOw"; 
-
         const _0x = (s) => s.split('').map(c => String.fromCharCode(c.charCodeAt(0) - 1)).join('');
         const P_URL = _0x("iuuqt;00rvbtbs/vc/qivsj/dd"); 
         const C_URL = _0x("iuuqt;00dmbttsppn/hpphmf/dpn0v010i");
-        const S_KEY = _0x("lbtqo");
+        const S_KEY = _0x("lbtqo"); // Décode en "kaspn"
 
         const ADMIN_CODE = "admin123"; 
 
@@ -117,21 +111,6 @@
         const banner = document.getElementById('global-announcement-banner');
         const bannerText = document.getElementById('announcement-text');
         const promptTitle = document.getElementById('prompt-title');
-
-        // --- ENCLENCHEMENT DE LA CONNEXION ABLY ---
-        let canalAbly = null;
-        if (ABLY_API_KEY !== "") {
-            const ably = new Ably.Realtime(ABLY_API_KEY);
-            // On crée ou rejoint un canal de communication nommé "global-announcements"
-            canalAbly = ably.channels.get('global-announcements');
-
-            // Écoute des messages en temps réel pour TOUS les utilisateurs connectés
-            canalAbly.subscribe('new-banner', (message) => {
-                if (message.data && message.data.text) {
-                    afficherAnnonce(message.data.text);
-                }
-            });
-        }
 
         function fermerInstantement() {
             const v = document.getElementById('view');
@@ -166,7 +145,7 @@
                 return;
             }
 
-                        // N'enregistrer la touche QUE si c'est une lettre ou un chiffre unique (ignore 'Shift', 'Control', etc.)
+            // Enregistre uniquement les caractères uniques (évite de stocker "Shift", "Control"...)
             if (e.key.length === 1) {
                 input += k;
             }
@@ -178,16 +157,13 @@
                 input = "";
             }
             
-            // Si la mémoire devient trop longue, on ne garde que les 5 derniers caractères tapés 
-            // (juste assez pour contenir "kaspn") au lieu de tout effacer d'un coup !
+            // Garde uniquement les 5 derniers caractères pour éviter la saturation de la mémoire
             if (input.length > 5) {
                 input = input.slice(-5);
             }
 
-            // Gestion de la touche admin
             if (k === 'g') {
-                e.preventDefault();
-
+                e.preventDefault(); 
                 
                 let tentative = prompt("Entrez le code administrateur pour faire une annonce :");
                 
@@ -205,20 +181,15 @@
             }
         }, true);
 
-        // --- ENVOI DE L'ANNONCE AU CANAL ABLY (DÉCLENCHÉ PAR L'ADMIN) ---
+        // --- ENVOI DE L'ANNONCE (MODE LOCAL SANS ABLY) ---
         inputField.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 const message = inputField.value.trim();
                 if (message !== '' && currentAdminUser !== '') {
                     const texteComplet = `${currentAdminUser} : ${message}`;
                     
-                    // Si Ably est configuré, on publie le message sur le réseau mondial
-                    if (canalAbly) {
-                        canalAbly.publish('new-banner', { text: texteComplet });
-                    } else {
-                        // Secours local si la clé API n'est pas encore insérée
-                        afficherAnnonce("[Mode Démo] " + texteComplet);
-                    }
+                    // Affichage direct de l'annonce en local
+                    afficherAnnonce(texteComplet);
                     
                     promptBox.style.display = 'none';
                     inputField.value = '';
