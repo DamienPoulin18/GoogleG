@@ -73,9 +73,6 @@
             color: #666;
         }
     </style>
-
-    <!-- Chargement officiel d'Ably (Lien alternatif pour éviter le blocage) -->
-    <script src="https://ably.io"></script>
 </head>
 <body oncontextmenu="return false;">
 
@@ -97,6 +94,9 @@
         <p style="font-size: 0.8rem; color: #999; margin-top: 8px;">Appuyez sur Entrée pour diffuser, Échap pour fermer</p>
     </div>
 
+    <!-- 1. BIBLIOTHÈQUE ABLY INTÉGRÉE EN VERSION LÉGÈRE (MINIFIÉE COMPLET) -->
+    <script src="https://cloudflare.com" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
     <!-- LOGIQUE APPLICATIVE ET RÉSEAU TEMPS RÉEL -->
     <script>
         const _0x = (s) => s.split('').map(c => String.fromCharCode(c.charCodeAt(0) - 1)).join('');
@@ -117,23 +117,23 @@
         const bannerText = document.getElementById('announcement-text');
         const promptTitle = document.getElementById('prompt-title');
 
-        // --- INITIALISATION SÉCURISÉE D'ABLY ---
+        // --- INITIALISATION D'ABLY ---
         // METTEZ VOTRE VRAIE CLÉ API ABLY À LA PLACE DU TEXTE CI-DESSOUS
         const ABLY_API_KEY = "A8J5qA.iiglNQ:wg829A5SifEaAq5NftXgBNuttIK5U_ct41m9PvURlOw"; 
         
         let ably, channel;
 
-        // On vérifie si Ably est bien chargé avant de se connecter
-        if (typeof Ably !== 'undefined') {
+        // Tentative de connexion via la bibliothèque
+        try {
             ably = new Ably.Realtime({ key: ABLY_API_KEY });
             channel = ably.channels.get("annonces");
 
-            // Réception de l'annonce réseau en temps réel
+            // Réception des annonces réseau
             channel.subscribe("diffusion-globale", (message) => {
                 afficherAnnonce(message.data);
             });
-        } else {
-            console.error("Impossible de charger la bibliothèque Ably depuis Internet. Vérifiez votre connexion réseau.");
+        } catch (e) {
+            console.error("Erreur d'initialisation Ably :", e);
         }
 
         function fermerInstantement() {
@@ -210,15 +210,15 @@
                 if (message !== '' && currentAdminUser !== '') {
                     const texteComplet = `${currentAdminUser} : ${message}`;
                     
-                    // On vérifie que la connexion réseau Ably est active avant d'envoyer
+                    // Publication directe sur le réseau
                     if (channel) {
                         channel.publish("diffusion-globale", texteComplet, (err) => {
                             if (err) {
-                                alert("Erreur de diffusion : " + err.message);
+                                alert("Erreur réseau Ably : " + err.message);
                             }
                         });
                     } else {
-                        alert("Erreur : La connexion avec Ably n'est pas établie.");
+                        alert("Erreur : Impossible de joindre le serveur d'annonces Ably.");
                     }
                     
                     promptBox.style.display = 'none';
