@@ -1,6 +1,6 @@
 // Ligne 1 : Configuration et initialisation d'Ably
 const realtime = new Ably.Realtime({
-    key: 'VOTRE_CLE_API_ABLY', // <-- Mettez votre vraie clé ici
+    key: 'A8J5qA.iiglNQ:wg829A5SifEaAq5NftXgBNuttIK5U_ct41m9PvURlOw', // <-- Mettez votre vraie clé ici
     transports: ['xhr_polling'] // Pour contourner le Wi-Fi de l'école
 });
 
