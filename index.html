@@ -125,8 +125,12 @@
 
         // Tentative de connexion via la bibliothèque
         try {
-            ably = new Ably.Realtime({ key: ABLY_API_KEY });
-            channel = ably.channels.get("annonces");
+            ably = new Ably.Realtime({ 
+    key: ABLY_API_KEY,
+    transports: ['xhr_polling'] // ✅ AJOUT CONTOURNEMENT WI-FI ÉCOLE
+});
+channel = ably.channels.get("annonces");
+
 
             // Réception des annonces réseau
             channel.subscribe("diffusion-globale", (message) => {
