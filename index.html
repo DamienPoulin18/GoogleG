@@ -106,37 +106,23 @@
         <p style="font-size: 0.8rem; color: #999; margin-top: 8px;">Appuyez sur Entrée pour diffuser, Échap pour fermer</p>
     </div>
 
-    <!-- INTEGRATION DU SDK FIREBASE VIA CDN (MODULES JS) -->
+    <!-- INTEGRATION DU SDK FIREBASE VIA CDN -->
     <script type="module">
         // 1. Importation du SDK Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // 2. Remplacez ces informations par vos propres clés issues de la console Firebase
-<script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyDjXH-T5x-HGzdRa23FccprypShYk3UPKM",
-    authDomain: "w-af3ed.firebaseapp.com",
-    databaseURL: "https://w-af3ed-default-rtdb.firebaseio.com",
-    projectId: "w-af3ed",
-    storageBucket: "w-af3ed.firebasestorage.app",
-    messagingSenderId: "782718837615",
-    appId: "1:782718837615:web:e7ebdd5773ce9152f4fe9a",
-    measurementId: "G-DKYF6JZ7D2"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-</script>
+        // 2. Configuration Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDjXH-T5x-HGzdRa23FccprypShYk3UPKM",
+            authDomain: "w-af3ed.firebaseapp.com",
+            databaseURL: "https://w-af3ed-default-rtdb.firebaseio.com",
+            projectId: "w-af3ed",
+            storageBucket: "w-af3ed.firebasestorage.app",
+            messagingSenderId: "782718837615",
+            appId: "1:782718837615:web:e7ebdd5773ce9152f4fe9a",
+            measurementId: "G-DKYF6JZ7D2"
+        };
 
         // 3. Initialisation de Firebase & Realtime Database
         const app = initializeApp(firebaseConfig);
