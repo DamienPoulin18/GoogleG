@@ -166,7 +166,10 @@
     <div id="announcement-prompt" class="admin-modal">
         <p><strong id="prompt-title">Créer une annonce globale</strong></p>
         <input type="text" id="announcement-input" placeholder="Texte de l'annonce...">
-        <p style="font-size: 0.8rem; color: #999; margin-top: 8px;">Appuyez sur Entrée pour diffuser, Échap pour fermer</p>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+            <p style="font-size: 0.8rem; color: #999;">Entrée pour diffuser, Échap pour fermer</p>
+            <button id="logout-btn" style="background: none; border: none; color: #ffaa00; font-family: 'Fredoka', sans-serif; font-weight: bold; cursor: pointer; font-size: 0.85rem;">Mettre à jour le code</button>
+        </div>
     </div>
 
     <!-- INTEGRATION DU SDK FIREBASE VIA CDN -->
@@ -209,17 +212,33 @@
 
         const promptBox = document.getElementById('announcement-prompt');
         const inputField = document.getElementById('announcement-input');
+        const logoutBtn = document.getElementById('logout-btn');
         const banner = document.getElementById('global-announcement-banner');
         const bannerText = document.getElementById('announcement-text');
         const promptTitle = document.getElementById('prompt-title');
 
-        // Vérification si le code admin était sauvegardé
+        // Vérification au chargement
         if (localStorage.getItem('admin_saved') === 'true') {
             authSaveCheckbox.checked = true;
             if (localStorage.getItem('admin_username')) {
                 authUsernameInput.value = localStorage.getItem('admin_username');
             }
         }
+
+        // Action sur la case à cocher pour supprimer directement les données enregistrées si décoche
+        authSaveCheckbox.addEventListener('change', () => {
+            if (!authSaveCheckbox.checked) {
+                localStorage.removeItem('admin_saved');
+                localStorage.removeItem('admin_username');
+            }
+        });
+
+        // Bouton "Mettre à jour le code" pour décocher ou se déconnecter facilement
+        logoutBtn.addEventListener('click', () => {
+            promptBox.style.display = 'none';
+            authModal.style.display = 'block';
+            setTimeout(() => authCodeInput.focus(), 50);
+        });
 
         onValue(announcementRef, (snapshot) => {
             const data = snapshot.val();
@@ -301,10 +320,17 @@
                 input = input.slice(-5);
             }
 
+            // Touche G pour ouvrir
             if (k === 'g') {
                 e.preventDefault(); 
                 
-                // Si l'administrateur a coché "Save", il accède directement au champ d'annonce
+                // Si Shift + G est appuyé, on réouvre le menu avec le mot de passe pour pouvoir décocher la case
+                if (e.shiftKey) {
+                    authModal.style.display = 'block';
+                    setTimeout(() => authCodeInput.focus(), 50);
+                    return;
+                }
+
                 if (localStorage.getItem('admin_saved') === 'true') {
                     const savedUser = localStorage.getItem('admin_username') || "Rip_Motly";
                     ouvrirPromptAnnonce(savedUser);
@@ -332,7 +358,6 @@
                     promptBox.style.display = 'none';
                     inputField.value = '';
 
-                    // Si non sauvegardé, réinitialiser pour la prochaine fois
                     if (localStorage.getItem('admin_saved') !== 'true') {
                         currentAdminUser = "";
                     }
