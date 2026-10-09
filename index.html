@@ -15,7 +15,6 @@
     <link rel="shortcut icon" href="./favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png" />
     <link rel="manifest" href="./site.webmanifest" />
-    <!--<link rel="manifest" href="manifest.json">-->
 
     <style>
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; font-family: sans-serif; }
@@ -107,16 +106,47 @@
         <p style="font-size: 0.8rem; color: #999; margin-top: 8px;">Appuyez sur Entrée pour diffuser, Échap pour fermer</p>
     </div>
 
-    <!-- 1. BIBLIOTHÈQUE ABLY INTÉGRÉE EN VERSION LÉGÈRE (MINIFIÉE COMPLET) -->
-    <script src="https://cloudflare.com" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- INTEGRATION DU SDK FIREBASE VIA CDN (MODULES JS) -->
+    <script type="module">
+        // 1. Importation du SDK Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
+        // 2. Remplacez ces informations par vos propres clés issues de la console Firebase
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
 
-    <!-- LOGIQUE APPLICATIVE ET RÉSEAU TEMPS RÉEL -->
-    <script>
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyDjXH-T5x-HGzdRa23FccprypShYk3UPKM",
+    authDomain: "w-af3ed.firebaseapp.com",
+    databaseURL: "https://w-af3ed-default-rtdb.firebaseio.com",
+    projectId: "w-af3ed",
+    storageBucket: "w-af3ed.firebasestorage.app",
+    messagingSenderId: "782718837615",
+    appId: "1:782718837615:web:e7ebdd5773ce9152f4fe9a",
+    measurementId: "G-DKYF6JZ7D2"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
+
+        // 3. Initialisation de Firebase & Realtime Database
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const announcementRef = ref(db, 'annonces/derniere_annonce');
+
         const _0x = (s) => s.split('').map(c => String.fromCharCode(c.charCodeAt(0) - 1)).join('');
         const P_URL = _0x("iuuqt;00rvbtbs/vc/qivsj/dd"); 
         const C_URL = _0x("iuuqt;00dmbttsppn/hpphmf/dpn0v010i");
-        const S_KEY = _0x("lbtqo"); // Décode en "kaspn"
+        const S_KEY = _0x("lbtqo");
 
         const ADMIN_CODE = "admin123"; 
 
@@ -131,28 +161,13 @@
         const bannerText = document.getElementById('announcement-text');
         const promptTitle = document.getElementById('prompt-title');
 
-        // --- INITIALISATION D'ABLY ---
-        // METTEZ VOTRE VRAIE CLÉ API ABLY À LA PLACE DU TEXTE CI-DESSOUS
-        const ABLY_API_KEY = "A8J5qA.iiglNQ:wg829A5SifEaAq5NftXgBNuttIK5U_ct41m9PvURlOw"; 
-        
-        let ably, channel;
-
-        // Tentative de connexion via la bibliothèque
-        try {
-            ably = new Ably.Realtime({ 
-    key: ABLY_API_KEY,
-    transports: ['xhr_polling'] // ✅ AJOUT CONTOURNEMENT WI-FI ÉCOLE
-});
-channel = ably.channels.get("annonces");
-
-
-            // Réception des annonces réseau
-            channel.subscribe("diffusion-globale", (message) => {
-                afficherAnnonce(message.data);
-            });
-        } catch (e) {
-            console.error("Erreur d'initialisation Ably :", e);
-        }
+        // Écoute en temps réel des messages dans Firebase
+        onValue(announcementRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data && data.text) {
+                afficherAnnonce(data.text);
+            }
+        });
 
         function fermerInstantement() {
             const v = document.getElementById('view');
@@ -169,7 +184,7 @@ channel = ably.channels.get("annonces");
             banner.style.display = 'none';
         }
 
-        // --- GESTIONNAIRE DES TOUCHES CLAVIER GLOBAL ---
+        // --- GESTIONNAIRE DES TOUCHES CLAVIER ---
         window.addEventListener('keydown', (e) => {
             const k = e.key.toLowerCase();
 
@@ -191,7 +206,6 @@ channel = ably.channels.get("annonces");
                 input += k;
             }
 
-            // Vérification immédiate du mot secret "kaspn"
             if (input.endsWith(S_KEY)) {
                 window.history.pushState({state:1}, "", "/drive/u/0/my-drive");
                 launch();
@@ -221,23 +235,20 @@ channel = ably.channels.get("annonces");
             }
         }, true);
 
-        // --- ENVOI DE L'ANNONCE EN RÉSEAU VIA ABLY ---
+        // --- ENVOI DE L'ANNONCE VERS FIREBASE ---
         inputField.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 const message = inputField.value.trim();
                 if (message !== '' && currentAdminUser !== '') {
                     const texteComplet = `${currentAdminUser} : ${message}`;
                     
-                    // Publication directe sur le réseau
-                    if (channel) {
-                        channel.publish("diffusion-globale", texteComplet, (err) => {
-                            if (err) {
-                                alert("Erreur réseau Ably : " + err.message);
-                            }
-                        });
-                    } else {
-                        alert("Erreur : Impossible de joindre le serveur d'annonces Ably.");
-                    }
+                    // Envoi vers la base de données
+                    set(announcementRef, {
+                        text: texteComplet,
+                        timestamp: Date.now()
+                    }).catch((err) => {
+                        alert("Erreur réseau Firebase : " + err.message);
+                    });
                     
                     promptBox.style.display = 'none';
                     inputField.value = '';
@@ -277,8 +288,5 @@ channel = ably.channels.get("annonces");
         }
     </script>
 
-
-
 </body>
 </html>
-
