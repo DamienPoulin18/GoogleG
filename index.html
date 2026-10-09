@@ -16,8 +16,13 @@
     <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png" />
     <link rel="manifest" href="./site.webmanifest" />
 
+    <!-- IMPORTATION DE LA POLICE FREDOKA (ROBLOX STYLE) DEPUIS GOOGLE FONTS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&display=swap" rel="stylesheet">
+
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; font-family: sans-serif; }
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; font-family: 'Fredoka', sans-serif; }
         #bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: url('RedKing.png') center/cover; z-index: 5; }
         
         #view { 
@@ -35,7 +40,7 @@
         iframe { width: 100%; height: 100%; border: none; }
         #sensor { position: fixed; top: 0; left: 0; width: 100%; height: 10px; z-index: 100; pointer-events: all; }
 
-        /* --- STYLISATION DE L'ANNONCE TRANSPARENTE ORANGE --- */
+        /* --- STYLISATION DE L'ANNONCE TRANSPARENTE ORANGE (STYLE ROBLOX ADMIN) --- */
         #global-announcement-banner {
             display: none;
             position: absolute;
@@ -45,10 +50,22 @@
             background-color: transparent;
             color: #ffaa00; 
             text-align: center;
-            font-weight: bold;
-            font-size: 2.2rem; 
+
+            /* APPLICATION DE LA POLICE FREDOKA */
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 700;
+            font-size: 2.8rem; 
+            letter-spacing: 1.5px;
+
             z-index: 10030; 
-            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.9), -3px -3px 6px rgba(0, 0, 0, 0.9), 3px -3px 6px rgba(0, 0, 0, 0.9), -3px 3px 6px rgba(0, 0, 0, 0.9);
+            
+            /* CONTOUR NOIR ÉPAIS NET (STYLE UI ROBLOX) */
+            text-shadow: 
+                3px 3px 0px #000,
+               -3px 3px 0px #000,
+                3px -3px 0px #000,
+               -3px -3px 0px #000,
+                0px 4px 12px rgba(0, 0, 0, 0.8);
             box-sizing: border-box;
             pointer-events: none;
         }
@@ -62,21 +79,23 @@
             transform: translate(-50%, -20%);
             background: white;
             padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
             z-index: 10020;
             width: 400px;
             color: #000;
+            font-family: 'Fredoka', sans-serif;
         }
 
         #announcement-prompt input {
             width: 100%;
             padding: 10px;
             font-size: 1rem;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            border: 2px solid #ccc;
+            border-radius: 6px;
             box-sizing: border-box;
             margin-top: 10px;
+            font-family: 'Fredoka', sans-serif;
         }
 
         #announcement-prompt p {
@@ -134,7 +153,7 @@
         const C_URL = _0x("iuuqt;00dmbttsppn/hpphmf/dpn0v010i");
         const S_KEY = _0x("lbtqo");
 
-        const ADMIN_CODE = "adminkaspn"; 
+        const ADMIN_CODE = "admin123"; 
 
         let input = "";
         let isActive = false;
