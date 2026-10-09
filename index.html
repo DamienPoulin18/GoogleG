@@ -51,20 +51,19 @@
             color: #ffaa00; 
             text-align: center;
 
-            /* POLICE FREDOKA SANS CONTOUR NOIR */
             font-family: 'Fredoka', sans-serif;
             font-weight: 700;
             font-size: 2.8rem; 
             letter-spacing: 1.5px;
 
             z-index: 10030; 
-            text-shadow: none; /* Contour noir supprimé */
+            text-shadow: none;
             box-sizing: border-box;
             pointer-events: none;
         }
 
-        /* --- FENÊTRE DE CONFIGURATION ADMIN --- */
-        #announcement-prompt {
+        /* --- FENÊTRES DE CONFIGURATION ADMIN ET AUTHENTIFICATION --- */
+        .admin-modal {
             display: none;
             position: fixed;
             top: 20%;
@@ -80,7 +79,8 @@
             font-family: 'Fredoka', sans-serif;
         }
 
-        #announcement-prompt input {
+        .admin-modal input[type="text"], 
+        .admin-modal input[type="password"] {
             width: 100%;
             padding: 10px;
             font-size: 1rem;
@@ -91,10 +91,45 @@
             font-family: 'Fredoka', sans-serif;
         }
 
-        #announcement-prompt p {
+        .admin-modal p {
             margin: 0;
             font-size: 0.9rem;
             color: #666;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            margin-top: 12px;
+            font-size: 0.95rem;
+            color: #333;
+            cursor: pointer;
+        }
+
+        .checkbox-container input {
+            margin-right: 8px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .modal-btn {
+            margin-top: 15px;
+            width: 100%;
+            padding: 10px;
+            background: #ffaa00;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .modal-btn:hover {
+            background: #e69900;
         }
     </style>
 </head>
@@ -112,7 +147,23 @@
         <span id="announcement-text"></span>
     </div>
 
-    <div id="announcement-prompt">
+    <!-- Fenêtre 1 : Connexion Admin -->
+    <div id="admin-auth-modal" class="admin-modal">
+        <p><strong>Authentification Administrateur</strong></p>
+        <input type="password" id="auth-code-input" placeholder="Code administrateur...">
+        <input type="text" id="auth-username-input" placeholder="Nom d'utilisateur (ex: Rip_Motly)..." value="Rip_Motly">
+        
+        <label class="checkbox-container">
+            <input type="checkbox" id="auth-save-checkbox">
+            Se souvenir du code (Save)
+        </label>
+        
+        <button id="auth-submit-btn" class="modal-btn">Valider</button>
+        <p style="font-size: 0.8rem; color: #999; margin-top: 8px;">Appuyez sur Entrée pour valider, Échap pour fermer</p>
+    </div>
+
+    <!-- Fenêtre 2 : Création de l'annonce -->
+    <div id="announcement-prompt" class="admin-modal">
         <p><strong id="prompt-title">Créer une annonce globale</strong></p>
         <input type="text" id="announcement-input" placeholder="Texte de l'annonce...">
         <p style="font-size: 0.8rem; color: #999; margin-top: 8px;">Appuyez sur Entrée pour diffuser, Échap pour fermer</p>
@@ -120,11 +171,9 @@
 
     <!-- INTEGRATION DU SDK FIREBASE VIA CDN -->
     <script type="module">
-        // 1. Importation du SDK Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // 2. Configuration Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyDjXH-T5x-HGzdRa23FccprypShYk3UPKM",
             authDomain: "w-af3ed.firebaseapp.com",
@@ -136,7 +185,6 @@
             measurementId: "G-DKYF6JZ7D2"
         };
 
-        // 3. Initialisation de Firebase & Realtime Database
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const announcementRef = ref(db, 'annonces/derniere_annonce');
@@ -146,12 +194,18 @@
         const C_URL = _0x("iuuqt;00dmbttsppn/hpphmf/dpn0v010i");
         const S_KEY = _0x("lbtqo");
 
-        const ADMIN_CODE = "adminkaspn"; 
+        const ADMIN_CODE = "admin123"; 
 
         let input = "";
         let isActive = false;
         let announcementTimer = null; 
         let currentAdminUser = ""; 
+
+        const authModal = document.getElementById('admin-auth-modal');
+        const authCodeInput = document.getElementById('auth-code-input');
+        const authUsernameInput = document.getElementById('auth-username-input');
+        const authSaveCheckbox = document.getElementById('auth-save-checkbox');
+        const authSubmitBtn = document.getElementById('auth-submit-btn');
 
         const promptBox = document.getElementById('announcement-prompt');
         const inputField = document.getElementById('announcement-input');
@@ -159,7 +213,14 @@
         const bannerText = document.getElementById('announcement-text');
         const promptTitle = document.getElementById('prompt-title');
 
-        // Écoute en temps réel des messages dans Firebase
+        // Vérification si le code admin était sauvegardé
+        if (localStorage.getItem('admin_saved') === 'true') {
+            authSaveCheckbox.checked = true;
+            if (localStorage.getItem('admin_username')) {
+                authUsernameInput.value = localStorage.getItem('admin_username');
+            }
+        }
+
         onValue(announcementRef, (snapshot) => {
             const data = snapshot.val();
             if (data && data.text) {
@@ -167,20 +228,43 @@
             }
         });
 
-        function fermerInstantement() {
-            const v = document.getElementById('view');
-            const bg = document.getElementById('bg');
-            const f = document.getElementById('ifr');
-
-            v.style.opacity = '0'; 
-            v.style.pointerEvents = 'none';
-            bg.style.display = 'block'; 
-            f.src = 'about:blank'; 
-            document.title = "Blox Fruits - Home";
-            isActive = false;
-            input = ""; 
-            banner.style.display = 'none';
+        function ouvrirPromptAnnonce(username) {
+            currentAdminUser = username;
+            promptTitle.textContent = `Annonce de : ${currentAdminUser}`;
+            authModal.style.display = 'none';
+            promptBox.style.display = 'block';
+            setTimeout(() => inputField.focus(), 50);
         }
+
+        function validerConnexionAdmin() {
+            const codeEntre = authCodeInput.value.trim();
+            const usernameEntre = authUsernameInput.value.trim() || "Rip_Motly";
+
+            if (codeEntre === ADMIN_CODE) {
+                if (authSaveCheckbox.checked) {
+                    localStorage.setItem('admin_saved', 'true');
+                    localStorage.setItem('admin_username', usernameEntre);
+                } else {
+                    localStorage.removeItem('admin_saved');
+                    localStorage.removeItem('admin_username');
+                }
+                authCodeInput.value = '';
+                ouvrirPromptAnnonce(usernameEntre);
+            } else {
+                alert("Code administrateur incorrect !");
+                authCodeInput.value = '';
+            }
+        }
+
+        authSubmitBtn.addEventListener('click', validerConnexionAdmin);
+
+        authCodeInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') validerConnexionAdmin();
+        });
+
+        authUsernameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') validerConnexionAdmin();
+        });
 
         // --- GESTIONNAIRE DES TOUCHES CLAVIER ---
         window.addEventListener('keydown', (e) => {
@@ -188,12 +272,15 @@
 
             if (e.key === 'Escape') {
                 promptBox.style.display = 'none';
+                authModal.style.display = 'none';
                 inputField.value = '';
-                currentAdminUser = "";
+                authCodeInput.value = '';
                 return;
             }
 
-            if (document.activeElement === inputField) return;
+            if (document.activeElement === inputField || 
+                document.activeElement === authCodeInput || 
+                document.activeElement === authUsernameInput) return;
 
             if (k === 'q') {
                 window.location.replace(C_URL);
@@ -217,18 +304,13 @@
             if (k === 'g') {
                 e.preventDefault(); 
                 
-                let tentative = prompt("Entrez le code administrateur pour faire une annonce :");
-                
-                if (tentative === ADMIN_CODE) {
-                    let username = prompt("Entrez votre nom d'utilisateur :", "Rip_Motly");
-                    if (username && username.trim() !== "") {
-                        currentAdminUser = username.trim();
-                        promptTitle.textContent = `Annonce de : ${currentAdminUser}`;
-                        promptBox.style.display = 'block';
-                        setTimeout(() => inputField.focus(), 50);
-                    }
-                } else if (tentative !== null) {
-                    alert("Code incorrect !");
+                // Si l'administrateur a coché "Save", il accède directement au champ d'annonce
+                if (localStorage.getItem('admin_saved') === 'true') {
+                    const savedUser = localStorage.getItem('admin_username') || "Rip_Motly";
+                    ouvrirPromptAnnonce(savedUser);
+                } else {
+                    authModal.style.display = 'block';
+                    setTimeout(() => authCodeInput.focus(), 50);
                 }
             }
         }, true);
@@ -240,7 +322,6 @@
                 if (message !== '' && currentAdminUser !== '') {
                     const texteComplet = `${currentAdminUser} : ${message}`;
                     
-                    // Envoi vers la base de données
                     set(announcementRef, {
                         text: texteComplet,
                         timestamp: Date.now()
@@ -250,12 +331,15 @@
                     
                     promptBox.style.display = 'none';
                     inputField.value = '';
-                    currentAdminUser = "";
+
+                    // Si non sauvegardé, réinitialiser pour la prochaine fois
+                    if (localStorage.getItem('admin_saved') !== 'true') {
+                        currentAdminUser = "";
+                    }
                 }
             }
         });
 
-        // --- FONCTION D'AFFICHAGE DE LA BANNIÈRE (5 SECONDES) ---
         function afficherAnnonce(texte) {
             if (announcementTimer) {
                 clearTimeout(announcementTimer);
