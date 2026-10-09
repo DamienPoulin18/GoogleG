@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    <script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js');
+    });
+  }
+</script>
     <meta charset="UTF-8">
     <title>GoogleWs - Home</title>
     <link rel="icon" type="image/png" href="./favicon-96x96.png" sizes="96x96" />
@@ -269,13 +276,7 @@ channel = ably.channels.get("annonces");
             isActive = true;
         }
     </script>
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js');
-    });
-  }
-</script>
+
 
 
 </body>
