@@ -198,6 +198,7 @@
         const S_KEY = _0x("lbtqo");
 
         const ADMIN_CODE = "admin123"; 
+        const DUREE_AFFICHAGE = 5000; // 5 secondes en millisecondes
 
         let input = "";
         let isActive = false;
@@ -217,7 +218,6 @@
         const bannerText = document.getElementById('announcement-text');
         const promptTitle = document.getElementById('prompt-title');
 
-        // Vérification au chargement
         if (localStorage.getItem('admin_saved') === 'true') {
             authSaveCheckbox.checked = true;
             if (localStorage.getItem('admin_username')) {
@@ -225,7 +225,6 @@
             }
         }
 
-        // Action sur la case à cocher pour supprimer directement les données enregistrées si décoche
         authSaveCheckbox.addEventListener('change', () => {
             if (!authSaveCheckbox.checked) {
                 localStorage.removeItem('admin_saved');
@@ -233,17 +232,28 @@
             }
         });
 
-        // Bouton "Mettre à jour le code" pour décocher ou se déconnecter facilement
         logoutBtn.addEventListener('click', () => {
             promptBox.style.display = 'none';
             authModal.style.display = 'block';
             setTimeout(() => authCodeInput.focus(), 50);
         });
 
+        // --- GESTION EN TEMPS RÉEL AVEC EXPIRATION UNIVERSELLE ---
         onValue(announcementRef, (snapshot) => {
             const data = snapshot.val();
-            if (data && data.text) {
-                afficherAnnonce(data.text);
+            if (data && data.text && data.timestamp) {
+                const maintenant = Date.now();
+                const tempsEcoule = maintenant - data.timestamp;
+
+                // Si le temps écoulé est inférieur à 5 secondes, l'annonce est encore valide
+                if (tempsEcoule < DUREE_AFFICHAGE) {
+                    const tempsRestant = DUREE_AFFICHAGE - tempsEcoule;
+                    afficherAnnonce(data.text, tempsRestant);
+                } else {
+                    // Si les 5 secondes sont dépassées, on masque la bannière
+                    banner.style.display = 'none';
+                    bannerText.textContent = '';
+                }
             }
         });
 
@@ -285,7 +295,6 @@
             if (e.key === 'Enter') validerConnexionAdmin();
         });
 
-        // --- GESTIONNAIRE DES TOUCHES CLAVIER ---
         window.addEventListener('keydown', (e) => {
             const k = e.key.toLowerCase();
 
@@ -320,11 +329,9 @@
                 input = input.slice(-5);
             }
 
-            // Touche G pour ouvrir
             if (k === 'g') {
                 e.preventDefault(); 
                 
-                // Si Shift + G est appuyé, on réouvre le menu avec le mot de passe pour pouvoir décocher la case
                 if (e.shiftKey) {
                     authModal.style.display = 'block';
                     setTimeout(() => authCodeInput.focus(), 50);
@@ -341,7 +348,7 @@
             }
         }, true);
 
-        // --- ENVOI DE L'ANNONCE VERS FIREBASE ---
+        // --- ENVOI AVEC HORODATAGE (TIMESTAMP) ---
         inputField.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 const message = inputField.value.trim();
@@ -350,7 +357,7 @@
                     
                     set(announcementRef, {
                         text: texteComplet,
-                        timestamp: Date.now()
+                        timestamp: Date.now() // Horodatage précis
                     }).catch((err) => {
                         alert("Erreur réseau Firebase : " + err.message);
                     });
@@ -365,7 +372,8 @@
             }
         });
 
-        function afficherAnnonce(texte) {
+        // --- FONCTION D'AFFICHAGE AVEC TEMPS RESTANT ---
+        function afficherAnnonce(texte, dureeRestante) {
             if (announcementTimer) {
                 clearTimeout(announcementTimer);
             }
@@ -376,7 +384,7 @@
             announcementTimer = setTimeout(() => {
                 banner.style.display = 'none';
                 bannerText.textContent = '';
-            }, 5000);
+            }, dureeRestante);
         }
 
         function launch() {
